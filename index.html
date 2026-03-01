@@ -208,6 +208,27 @@
       animation: fadeUp 1s 0.7s ease both;
     }
 
+    /* CSS olive (replaces unreliable 🫒 emoji) */
+    .olive-icon {
+      display:inline-block;
+      width:2rem; height:2.6rem;
+      background:radial-gradient(ellipse 60% 100% at 38% 28%, #6db33a 0%, #3d7018 50%, #2a4e10 100%);
+      border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+      position:relative;
+      box-shadow:1px 3px 6px rgba(0,0,0,0.25);
+      vertical-align:middle;
+    }
+    .olive-icon::after {
+      content:'';position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      width:35%;height:25%;background:#7a2800;border-radius:50%;
+    }
+    .olive-icon::before {
+      content:'';position:absolute;top:16%;left:20%;
+      width:22%;height:34%;
+      background:rgba(160,230,80,0.42);border-radius:50%;transform:rotate(-20deg);
+    }
+
     /* ── Animations ── */
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-24px); }
@@ -258,6 +279,34 @@
       <h2>Our Songs</h2>
       <p>The soundtrack to us. All the songs that make me think of you.</p>
       <span class="tag">Listen</span>
+    </a>
+
+    <a href="catch-my-heart.html" class="game-card">
+      <div class="icon">🧺</div>
+      <h2>Catch My Heart</h2>
+      <p>Hearts fall from the sky — catch them all! Each one reveals a reason I love you.</p>
+      <span class="tag">Play now</span>
+    </a>
+
+    <a href="love-maze.html" class="game-card">
+      <div class="icon">🌹</div>
+      <h2>Love Maze</h2>
+      <p>Navigate a glowing maze to find my heart. 6 levels — traps, fog, and increasing chaos await.</p>
+      <span class="tag">Play now</span>
+    </a>
+
+    <a href="olive-catcher.html" class="game-card">
+      <div class="icon"><div class="olive-icon"></div></div>
+      <h2>Olive Dodge</h2>
+      <p>Olives are falling and they are DISGUSTING. Dodge every single one. You hate them. We know.</p>
+      <span class="tag">Play now</span>
+    </a>
+
+    <a href="whack-an-olive.html" class="game-card">
+      <div class="icon">🔨 <div class="olive-icon" style="width:1.4rem;height:1.8rem;display:inline-block;vertical-align:middle"></div></div>
+      <h2>Whack-an-Olive</h2>
+      <p>Olives keep popping up — SMASH THEM ALL before time runs out! Don't hit the hearts.</p>
+      <span class="tag">Play now</span>
     </a>
 
     <div class="game-card soon">
