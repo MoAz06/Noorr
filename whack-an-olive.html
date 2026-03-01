@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Whack-an-Olive 🫒</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --rose:#d94f7a;--rose-lt:#f7b8cc;--blush:#fff0f5;--deep:#7b1d42;
+      --card:rgba(255,255,255,0.88);
+    }
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:var(--blush);
+      min-height:100vh;overflow-x:hidden;
+      color:var(--deep);
+    }
+    .bg{
+      position:fixed;inset:0;z-index:0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, #ffd6e7 0%,transparent 55%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, #ffc2d9 0%,transparent 50%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, #fff0f5 0%,#ffe4ef 100%);
+    }
+    .bg::after{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(217,79,122,0.05) 1px,transparent 1px);background-size:24px 24px;}
+
+    canvas{position:fixed;inset:0;z-index:2;pointer-events:none;}
+
+    .hud{
+      position:fixed;top:0;left:0;right:0;z-index:10;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 28px;
+      background:linear-gradient(to bottom,rgba(255,240,245,0.97),transparent);
+    }
+    .hud-block{text-align:center;}
+    .hud-val{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;color:var(--rose);line-height:1;}
+    .hud-lbl{font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--rose-lt);margin-top:2px;}
+
+    /* timer bar */
+    .timer-bar-wrap{
+      position:fixed;top:72px;left:0;right:0;height:5px;z-index:10;
+      background:rgba(217,79,122,0.15);
+    }
+    #timer-bar{height:100%;background:linear-gradient(90deg,var(--rose-lt),var(--rose));transition:width 0.1s linear;}
+
+    /* grid */
+    .grid-wrap{
+      position:relative;z-index:5;
+      display:flex;align-items:center;justify-content:center;
+      min-height:100vh;padding:100px 20px 40px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:clamp(12px,3vw,24px);
+      width:min(520px,92vw);
+    }
+
+    /* hole */
+    .hole{
+      aspect-ratio:1;
+      background:radial-gradient(ellipse 70% 50% at 50% 70%, #c8799a 0%, #e8a0bc 40%, var(--rose-lt) 100%);
+      border-radius:50%;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 6px 20px rgba(200,60,100,0.18), inset 0 -4px 12px rgba(120,0,40,0.2);
+      cursor:pointer;
+    }
+
+    /* the olive/bonusheart inside hole */
+    .mole{
+      position:absolute;
+      bottom:-110%;left:50%;
+      transform:translateX(-50%);
+      transition:bottom 0.18s cubic-bezier(0.34,1.56,0.64,1);
+      user-select:none;
+      pointer-events:none;
+      line-height:1;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .hole.up .mole{bottom:8%;}
+
+    /* CSS olive shape */
+    .olive-shape{
+      width:clamp(32px,8vw,52px);
+      height:clamp(44px,11vw,70px);
+      background:radial-gradient(ellipse 60% 100% at 38% 30%, #6db33a 0%, #3d7018 50%, #2a4e10 100%);
+      border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+      position:relative;
+      box-shadow:2px 4px 8px rgba(0,0,0,0.35);
+    }
+    .olive-shape::after{
+      content:'';
+      position:absolute;
+      top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      width:38%;height:28%;
+      background:#7a2800;
+      border-radius:50%;
+      box-shadow:0 1px 3px rgba(0,0,0,0.4);
+    }
+    .olive-shape::before{
+      content:'';
+      position:absolute;
+      top:18%;left:22%;
+      width:22%;height:35%;
+      background:rgba(160,230,80,0.4);
+      border-radius:50%;
+      transform:rotate(-20deg);
+    }
+    .heart-mole{
+      font-size:clamp(2rem,8vw,3.2rem);
+      line-height:1;
+    }
+
+    /* whack flash */
+    .hole.whacked{animation:whack 0.2s ease;}
+    @keyframes whack{
+      0%{transform:scale(1);}
+      40%{transform:scale(0.85) rotate(-5deg);}
+      100%{transform:scale(1) rotate(0);}
+    }
+
+    /* splat overlay */
+    .splat{
+      position:absolute;inset:0;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:clamp(1.5rem,6vw,2.5rem);
+      opacity:0;pointer-events:none;z-index:2;
+      transition:opacity 0.1s;
+    }
+    .hole.whacked .splat{opacity:1;}
+
+    /* score pop */
+    .score-pop{
+      position:absolute;
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.5rem;font-weight:600;
+      pointer-events:none;z-index:10;
+      animation:popUp 0.7s ease forwards;
+    }
+    @keyframes popUp{
+      0%{opacity:1;transform:translateY(0) scale(1);}
+      100%{opacity:0;transform:translateY(-60px) scale(1.3);}
+    }
+
+    /* overlays */
+    .overlay{
+      position:fixed;inset:0;z-index:100;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:rgba(255,240,245,0.94);backdrop-filter:blur(12px);
+      text-align:center;padding:32px;
+    }
+    .overlay.hidden{display:none;}
+    .ov-emoji{font-size:4rem;margin-bottom:16px;}
+    .olive-big{
+      display:inline-block;width:4rem;height:5.2rem;
+      background:radial-gradient(ellipse 60% 100% at 38% 28%,#6db33a 0%,#3d7018 50%,#2a4e10 100%);
+      border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+      position:relative;box-shadow:2px 6px 14px rgba(0,0,0,0.3);
+      margin-bottom:16px;
+    }
+    .olive-big::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:35%;height:25%;background:#7a2800;border-radius:50%;}
+    .olive-big::before{content:'';position:absolute;top:16%;left:20%;width:22%;height:34%;background:rgba(160,230,80,0.42);border-radius:50%;transform:rotate(-20deg);}
+    .ov-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,6vw,3.2rem);font-weight:600;color:var(--deep);margin-bottom:10px;}
+    .ov-title em{font-style:italic;color:var(--rose);}
+    .ov-sub{font-size:0.9rem;font-weight:300;color:#a0506a;max-width:360px;line-height:1.7;margin-bottom:32px;}
+    .btn-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+    .btn{padding:13px 28px;border-radius:999px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;display:inline-block;transition:transform 0.15s,box-shadow 0.15s;}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,60,100,0.22);}
+    .btn-primary{background:linear-gradient(135deg,var(--rose-lt),var(--rose));color:white;}
+    .btn-secondary{background:white;border:2px solid var(--rose);color:var(--rose);}
+
+    #quip{
+      position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+      font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;
+      color:var(--rose);z-index:20;pointer-events:none;
+      opacity:0;transition:opacity 0.2s;white-space:nowrap;
+      background:var(--card);border:1.5px solid rgba(255,182,208,0.6);
+      border-radius:999px;padding:10px 22px;
+      box-shadow:0 4px 16px rgba(200,60,100,0.1);
+    }
+
+    .back{position:fixed;top:18px;left:20px;z-index:200;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--rose);text-decoration:none;opacity:0.7;transition:opacity 0.2s;}
+    .back:hover{opacity:1;}
+  </style>
+</head>
+<body>
+<div class="bg"></div>
+<canvas id="gc"></canvas>
+<a href="index.html" class="back" id="back-lnk">← home</a>
+
+<div class="hud">
+  <div class="hud-block"><div class="hud-val" id="score-val">0</div><div class="hud-lbl">score</div></div>
+  <div class="hud-block"><div class="hud-val" id="timer-val">30</div><div class="hud-lbl">seconds</div></div>
+  <div class="hud-block"><div class="hud-val" id="miss-val">0</div><div class="hud-lbl">missed</div></div>
+</div>
+<div class="timer-bar-wrap"><div id="timer-bar" style="width:100%"></div></div>
+<div id="quip"></div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- Start -->
+<div class="overlay" id="ov-start">
+  <div class="olive-big"></div>
+  <h1 class="ov-title">Whack-an-<em>Olive!</em></h1>
+  <p class="ov-sub">
+    Olives are popping up everywhere — SMASH THEM ALL! 🔨<br/>
+    Don't hit the 💕 hearts or you'll lose points.<br/>
+    You have 30 seconds. DESTROY THEM. 💀
+  </p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">SMASH EM 🔨</button>
+    <a href="index.html" class="btn btn-secondary">← Back</a>
+  </div>
+</div>
+
+<!-- End -->
+<div class="overlay hidden" id="ov-end">
+  <div class="ov-emoji" id="end-emoji">🏆</div>
+  <h1 class="ov-title" id="end-title">Done!</h1>
+  <p class="ov-sub" id="end-sub"></p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">Again! 🔨</button>
+    <a href="index.html" class="btn btn-secondary">← Home</a>
+  </div>
+</div>
+
+<script>
+const QUIPS=[
+  "GET THAT OLIVE!! 🔨","SMASH IT","DISGUSTING","EW EW EW","NOT IN MY HOUSE",
+  "DIE OLIVE DIE","GROSS","I HATE OLIVES","GET IT GET IT","YUCK 🤢",
+  "OLIVE OBLITERATED ✅","ANOTHER ONE BITES THE DUST","NO MERCY 🔨"
+];
+const WHACK_SOUNDS=[];// placeholder
+
+const canvas=document.getElementById('gc');
+const ctx=canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();addEventListener('resize',resize);
+
+const TOTAL_HOLES=9;
+let holes=[];
+let score=0,missed=0,timeLeft=30,running=false;
+let raf,timerInt;
+const GAME_TIME=30;
+
+// Build grid
+const gridEl=document.getElementById('grid');
+for(let i=0;i<TOTAL_HOLES;i++){
+  const hole=document.createElement('div');
+  hole.className='hole';
+  hole.innerHTML=`<div class="mole" id="mole-${i}"><div class="olive-shape"></div></div><div class="splat" id="splat-${i}">💥</div>`;
+  hole.addEventListener('click',()=>whack(i));
+  hole.addEventListener('touchstart',e=>{e.preventDefault();whack(i);},{passive:false});
+  gridEl.appendChild(hole);
+  holes.push({el:hole,moleEl:hole.querySelector('.mole'),splatEl:hole.querySelector('.splat'),up:false,isHeart:false,timeout:null});
+}
+
+function startGame(){
+  document.getElementById('ov-start').classList.add('hidden');
+  document.getElementById('ov-end').classList.add('hidden');
+  document.getElementById('back-lnk').style.display='none';
+  score=0;missed=0;timeLeft=GAME_TIME;
+  holes.forEach(h=>{clearTimeout(h.timeout);h.el.classList.remove('up','whacked');h.up=false;});
+  updateHUD();
+  running=true;
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timer-val').textContent=timeLeft;
+    document.getElementById('timer-bar').style.width=(timeLeft/GAME_TIME*100)+'%';
+    if(timeLeft<=0)endGame();
+  },1000);
+  cancelAnimationFrame(raf);
+  loop();
+  scheduleNext();
+}
+
+function scheduleNext(){
+  if(!running)return;
+  const delay=Math.max(300,700-((GAME_TIME-timeLeft)*8));
+  setTimeout(()=>{
+    if(!running)return;
+    popUp();
+    scheduleNext();
+  },delay);
+}
+
+function popUp(){
+  // find a hole that's not up
+  const available=holes.map((h,i)=>(!h.up?i:-1)).filter(i=>i>=0);
+  if(!available.length)return;
+  const idx=available[Math.floor(Math.random()*available.length)];
+  const h=holes[idx];
+  const isHeart=Math.random()<0.18;
+  h.isHeart=isHeart;
+  h.moleEl.innerHTML=isHeart?'<div class="heart-mole">💕</div>':'<div class="olive-shape"></div>';
+  h.up=true;
+  h.el.classList.add('up');
+  h.el.classList.remove('whacked');
+  h.splatEl.textContent=isHeart?'💔':'💥';
+
+  const upTime=isHeart? 1800+Math.random()*600 : 900+Math.random()*500 - (GAME_TIME-timeLeft)*5;
+  h.timeout=setTimeout(()=>{
+    if(h.up&&running){
+      if(!h.isHeart){missed++;updateHUD();showQuip();}
+      popDown(idx);
+    }
+  },Math.max(400,upTime));
+}
+
+function popDown(idx){
+  const h=holes[idx];
+  h.up=false;
+  h.el.classList.remove('up');
+}
+
+function whack(idx){
+  if(!running)return;
+  const h=holes[idx];
+  if(!h.up)return;
+  clearTimeout(h.timeout);
+
+  h.el.classList.add('whacked');
+
+  if(h.isHeart){
+    score=Math.max(0,score-3);
+    showScorePop(h.el,'−3','#c0506a');
+    showQuipText('Oops! That was a heart 💔');
+  } else {
+    const pts=1+(GAME_TIME-timeLeft>20?1:0);
+    score+=pts;
+    showScorePop(h.el,'+'+pts,'#d94f7a');
+    showQuip();
+  }
+  updateHUD();
+  setTimeout(()=>popDown(idx),200);
+}
+
+function showScorePop(el,text,color){
+  const pop=document.createElement('div');
+  pop.className='score-pop';
+  pop.textContent=text;
+  pop.style.color=color;
+  pop.style.left=(el.offsetLeft+el.offsetWidth/2-20)+'px';
+  pop.style.top=(el.offsetTop-10)+'px';
+  document.querySelector('.grid-wrap').appendChild(pop);
+  setTimeout(()=>pop.remove(),700);
+}
+
+let quipT;
+function showQuip(){showQuipText(QUIPS[Math.floor(Math.random()*QUIPS.length)]);}
+function showQuipText(t){
+  const el=document.getElementById('quip');
+  el.textContent=t;el.style.opacity='1';
+  clearTimeout(quipT);
+  quipT=setTimeout(()=>el.style.opacity='0',1200);
+}
+
+function updateHUD(){
+  document.getElementById('score-val').textContent=score;
+  document.getElementById('miss-val').textContent=missed;
+}
+
+// particle canvas (stars on whack)
+let parts=[];
+function spawnParticles(x,y){
+  for(let i=0;i<8;i++){
+    const a=Math.random()*Math.PI*2,sp=3+Math.random()*4;
+    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,life:1,decay:0.03,sz:14+Math.random()*8,ch:['✨','🌟','💥'][Math.floor(Math.random()*3)],g:0.12});
+  }
+}
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life-=p.decay;
+    ctx.save();ctx.globalAlpha=Math.max(0,p.life);
+    ctx.font=p.sz+'px serif';ctx.textAlign='center';ctx.fillText(p.ch,p.x,p.y);ctx.restore();
+  });
+  if(running||parts.length>0)raf=requestAnimationFrame(loop);
+}
+
+function endGame(){
+  running=false;
+  clearInterval(timerInt);
+  holes.forEach(h=>{clearTimeout(h.timeout);h.el.classList.remove('up');h.up=false;});
+  cancelAnimationFrame(raf);
+
+  document.getElementById('ov-end').classList.remove('hidden');
+  document.getElementById('back-lnk').style.display='';
+
+  let emoji,title,sub;
+  if(score>=40){emoji='👑';title='OLIVE <em>Destroyer!</em>';sub=`${score} points! ${missed} escaped. You are the olive's worst nightmare. 💀`;}
+  else if(score>=25){emoji='💪';title='Pretty <em>good!</em>';sub=`${score} points, ${missed} missed. Not bad — those olives didn't stand a chance!`;}
+  else if(score>=10){emoji='😅';title='<em>Decent!</em>';sub=`${score} points. Some olives escaped but you tried! 🤢`;}
+  else{emoji='😭';title='The <em>Olives Survived.</em>';sub=`Only ${score} points... the olives are out there celebrating rn`}
+
+  document.getElementById('end-emoji').textContent=emoji;
+  document.getElementById('end-title').innerHTML=title;
+  document.getElementById('end-sub').textContent=sub;
+}
+</script>
+</body>
+</html>

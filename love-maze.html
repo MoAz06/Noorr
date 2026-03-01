@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Love Maze 💕</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --rose:#d94f7a;--rose-lt:#f7b8cc;--blush:#fff0f5;--deep:#7b1d42;
+    }
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:#110610;
+      min-height:100vh;overflow:hidden;
+      color:var(--deep);
+    }
+
+    canvas{display:block;position:fixed;inset:0;z-index:1;}
+
+    /* HUD */
+    .hud{
+      position:fixed;top:0;left:0;right:0;z-index:10;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 24px;
+      background:linear-gradient(to bottom,rgba(10,3,10,0.9),transparent);
+      pointer-events:none;
+    }
+    .hud-block{text-align:center;min-width:70px;}
+    .hud-val{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--rose-lt);line-height:1;}
+    .hud-lbl{font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:rgba(247,184,204,0.45);margin-top:2px;}
+
+    /* level banner */
+    #level-banner{
+      position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;
+      text-align:center;pointer-events:none;
+      opacity:0;
+    }
+    #level-banner.show{animation:bannerAnim 2.2s ease forwards;}
+    @keyframes bannerAnim{
+      0%{opacity:0;transform:translate(-50%,-50%) scale(0.7);}
+      15%{opacity:1;transform:translate(-50%,-50%) scale(1.05);}
+      70%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+      100%{opacity:0;transform:translate(-50%,-50%) scale(1);}
+    }
+    #banner-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(2rem,8vw,4rem);font-weight:600;font-style:italic;
+      color:#fff0f5;text-shadow:0 0 30px rgba(217,79,122,0.8);
+    }
+    #banner-sub{font-size:0.85rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--rose-lt);margin-top:8px;opacity:0.8;}
+
+    /* D-pad */
+    .dpad{
+      position:fixed;bottom:24px;right:20px;z-index:10;
+      display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:4px;
+    }
+    .db{
+      background:rgba(255,182,208,0.12);border:1.5px solid rgba(255,182,208,0.22);
+      border-radius:10px;color:var(--rose-lt);font-size:1.1rem;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;user-select:none;-webkit-user-select:none;
+      transition:background 0.1s;
+    }
+    .db:active,.db.pressed{background:rgba(255,182,208,0.3);}
+
+    /* overlays */
+    .overlay{
+      position:fixed;inset:0;z-index:100;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:rgba(10,3,10,0.93);backdrop-filter:blur(14px);
+      text-align:center;padding:32px;
+    }
+    .overlay.hidden{display:none;}
+    .ov-emoji{font-size:3.5rem;margin-bottom:14px;}
+    .ov-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(2rem,6vw,3rem);font-weight:600;color:#fff0f5;margin-bottom:10px;
+    }
+    .ov-title em{font-style:italic;color:var(--rose-lt);}
+    .ov-sub{font-size:0.88rem;font-weight:300;color:rgba(247,184,204,0.75);max-width:380px;line-height:1.75;margin-bottom:10px;}
+    .controls-hint{font-size:0.75rem;color:rgba(247,184,204,0.4);margin-bottom:26px;line-height:1.9;}
+
+    /* level select dots */
+    .level-dots{display:flex;gap:10px;justify-content:center;margin-bottom:28px;flex-wrap:wrap;}
+    .ldot{
+      width:36px;height:36px;border-radius:50%;
+      border:2px solid rgba(247,184,204,0.25);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Cormorant Garamond',serif;font-size:0.9rem;font-weight:600;
+      color:rgba(247,184,204,0.35);transition:all 0.3s;
+    }
+    .ldot.completed{border-color:var(--rose);color:var(--rose-lt);background:rgba(217,79,122,0.12);}
+    .ldot.current{border-color:var(--rose-lt);color:#fff0f5;background:rgba(217,79,122,0.22);box-shadow:0 0 12px rgba(217,79,122,0.3);}
+
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+    .btn{
+      padding:12px 26px;border-radius:999px;border:none;cursor:pointer;
+      font-family:'DM Sans',sans-serif;font-size:0.82rem;letter-spacing:0.08em;
+      text-transform:uppercase;text-decoration:none;display:inline-block;
+      transition:transform 0.15s,box-shadow 0.15s;
+    }
+    .btn:hover{transform:translateY(-2px);}
+    .btn-primary{background:linear-gradient(135deg,var(--rose-lt),var(--rose));color:white;}
+    .btn-secondary{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,182,208,0.35);color:var(--rose-lt);}
+
+    /* lives display */
+    #lives-display{font-size:1.3rem;letter-spacing:3px;}
+
+    .back{position:fixed;top:16px;left:20px;z-index:200;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--rose-lt);text-decoration:none;opacity:0.45;transition:opacity 0.2s;}
+    .back:hover{opacity:1;}
+
+    /* ability bar */
+    #ability-bar{
+      position:fixed;bottom:24px;left:24px;z-index:10;
+      display:none;
+      flex-direction:column;gap:6px;
+    }
+    .ability{
+      background:rgba(255,182,208,0.1);border:1.5px solid rgba(255,182,208,0.25);
+      border-radius:10px;padding:6px 12px;
+      font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;
+      color:rgba(247,184,204,0.6);
+      display:flex;align-items:center;gap:8px;
+    }
+    .ability-key{
+      background:rgba(255,182,208,0.15);border-radius:5px;
+      padding:2px 6px;font-size:0.65rem;color:var(--rose-lt);
+    }
+  </style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+<a href="index.html" class="back" id="back-lnk">← home</a>
+
+<div class="hud">
+  <div class="hud-block"><div class="hud-val" id="time-val">0:00</div><div class="hud-lbl">time</div></div>
+  <div class="hud-block"><div class="hud-val" id="lives-display">♥♥♥</div><div class="hud-lbl">lives</div></div>
+  <div class="hud-block"><div class="hud-val" id="hearts-val">0</div><div class="hud-lbl">hearts</div></div>
+  <div class="hud-block"><div class="hud-val" id="level-val">1</div><div class="hud-lbl">level</div></div>
+</div>
+
+<div id="level-banner">
+  <div id="banner-title"></div>
+  <div id="banner-sub"></div>
+</div>
+
+<!-- D-pad -->
+<div class="dpad" id="dpad">
+  <div></div><div class="db" data-dir="up">↑</div><div></div>
+  <div class="db" data-dir="left">←</div><div class="db" style="opacity:0.2;cursor:default"></div><div class="db" data-dir="right">→</div>
+  <div></div><div class="db" data-dir="down">↓</div><div></div>
+</div>
+
+<div id="ability-bar">
+  <div class="ability"><span class="ability-key">SPACE</span> Use shield ♥</div>
+</div>
+
+<!-- Start -->
+<div class="overlay" id="ov-start">
+  <div class="ov-emoji">💕</div>
+  <h1 class="ov-title">Love <em>Maze</em></h1>
+  <p class="ov-sub">Navigate the maze and find my heart 💖<br/>Collect ♥ hearts for bonus points. Watch out for 💀 traps in later levels!<br/>No time pressure — just find your way to me.</p>
+  <p class="controls-hint">
+    🖥️ Arrow keys / WASD to move · Space for shield<br/>
+    📱 D-pad bottom right
+  </p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">Find my heart →</button>
+    <a href="index.html" class="btn btn-secondary">← Back</a>
+  </div>
+</div>
+
+<!-- Win level -->
+<div class="overlay hidden" id="ov-win">
+  <div class="ov-emoji">💖</div>
+  <h1 class="ov-title">You <em>found</em> me!</h1>
+  <p class="ov-sub" id="win-sub"></p>
+  <div class="level-dots" id="win-dots"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="next-btn" onclick="nextLevel()">Next level →</button>
+    <a href="index.html" class="btn btn-secondary">← Home</a>
+  </div>
+</div>
+
+<!-- Game over (lost all lives) -->
+<div class="overlay hidden" id="ov-dead">
+  <div class="ov-emoji">💔</div>
+  <h1 class="ov-title"><em>Ouch!</em></h1>
+  <p class="ov-sub" id="dead-sub"></p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="retryLevel()">Try again ♡</button>
+    <a href="index.html" class="btn btn-secondary">← Home</a>
+  </div>
+</div>
+
+<!-- All done -->
+<div class="overlay hidden" id="ov-done">
+  <div class="ov-emoji">👑</div>
+  <h1 class="ov-title">All <em>6 Levels</em> Complete!</h1>
+  <p class="ov-sub" id="done-sub"></p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">Play again ♡</button>
+    <a href="index.html" class="btn btn-secondary">← Home</a>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════
+   MAZE GENERATOR
+═══════════════════════════ */
+function generateMaze(cols,rows){
+  const cells=Array.from({length:rows},(_,r)=>
+    Array.from({length:cols},(_,c)=>({r,c,visited:false,walls:{N:true,E:true,S:true,W:true}}))
+  );
+  const stack=[];let cur=cells[0][0];cur.visited=true;
+  let visited=1,total=cols*rows;
+  while(visited<total){
+    const nbrs=[];const{r,c}=cur;
+    if(r>0      && !cells[r-1][c].visited) nbrs.push({cell:cells[r-1][c],dir:'N'});
+    if(c<cols-1 && !cells[r][c+1].visited) nbrs.push({cell:cells[r][c+1],dir:'E'});
+    if(r<rows-1 && !cells[r+1][c].visited) nbrs.push({cell:cells[r+1][c],dir:'S'});
+    if(c>0      && !cells[r][c-1].visited) nbrs.push({cell:cells[r][c-1],dir:'W'});
+    if(nbrs.length){
+      const{cell:next,dir}=nbrs[Math.floor(Math.random()*nbrs.length)];
+      const opp={N:'S',S:'N',E:'W',W:'E'};
+      cur.walls[dir]=false;next.walls[opp[dir]]=false;
+      next.visited=true;stack.push(cur);cur=next;visited++;
+    } else if(stack.length){cur=stack.pop();}
+  }
+  return cells;
+}
+
+/* ═══════════════════════════
+   LEVEL DEFINITIONS
+═══════════════════════════ */
+const LEVELS = [
+  {
+    cols:7, rows:7, hearts:3, traps:0, lives:3, fogRadius:0,
+    title:'Lost in Love', subtitle:'Level 1 · Find your way',
+    desc:'A gentle maze to warm up. Just find the heart 💖',
+    wallColor:'#8b3a5a', wallGlow:'rgba(217,79,122,0.4)', floorA:'#1a0a14', floorB:'#1e0c18'
+  },
+  {
+    cols:9, rows:9, hearts:5, traps:0, lives:3, fogRadius:0,
+    title:'Heart Labyrinth', subtitle:'Level 2 · Getting bigger',
+    desc:'The maze grows. Collect hearts along the way 💕',
+    wallColor:'#a03a68', wallGlow:'rgba(200,70,120,0.45)', floorA:'#180a18', floorB:'#1c0c1c'
+  },
+  {
+    cols:11, rows:11, hearts:6, traps:3, lives:3, fogRadius:0,
+    title:'Thorns & Roses', subtitle:'Level 3 · Watch your step',
+    desc:'💀 traps have appeared! Avoid the skulls or lose a life.',
+    wallColor:'#b03a78', wallGlow:'rgba(190,60,130,0.5)', floorA:'#150a1a', floorB:'#190c1e'
+  },
+  {
+    cols:13, rows:11, hearts:7, traps:5, lives:3, fogRadius:0,
+    title:'Maze of Devotion', subtitle:'Level 4 · It\'s a big one',
+    desc:'More traps, trickier paths. But I\'m at the end waiting 💖',
+    wallColor:'#c03a88', wallGlow:'rgba(180,50,140,0.55)', floorA:'#120810', floorB:'#160a15'
+  },
+  {
+    cols:13, rows:13, hearts:8, traps:7, lives:3, fogRadius:160,
+    title:'Fog of Love', subtitle:'Level 5 · Can you find me in the dark?',
+    desc:'The fog has rolled in — you can only see a short distance around you 🌫️',
+    wallColor:'#c84a8a', wallGlow:'rgba(200,74,138,0.55)', floorA:'#100810', floorB:'#140a14'
+  },
+  {
+    cols:15, rows:15, hearts:10, traps:10, lives:2, fogRadius:140,
+    title:'The Final Heart', subtitle:'Level 6 · The ultimate maze',
+    desc:'Fog, traps, huge maze — only 2 lives. Reach me if you dare 💕👑',
+    wallColor:'#d94f7a', wallGlow:'rgba(217,79,122,0.7)', floorA:'#0e060e', floorB:'#120810'
+  }
+];
+
+/* ═══════════════════════════
+   CANVAS & STATE
+═══════════════════════════ */
+const canvas=document.getElementById('gc');
+const ctx=canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();addEventListener('resize',()=>{resize();if(running)renderFrame();});
+
+let maze,COLS,ROWS,CELL,offsetX,offsetY;
+let player={r:0,c:0};
+let goal={r:0,c:0};
+let heartCells=[];
+let trapCells=[];
+let collectedHearts=0,totalHearts=0;
+let lives=3,maxLives=3;
+let startTime=0,elapsed=0,timerInt;
+let level=0;
+let running=false,won=false;
+let particles=[],trailPoints=[];
+let raf;
+let shieldActive=false,shieldCells=0; // collect hearts = earn shields
+let animT=0;
+let invincible=false,invTimer;
+let levelHearts=0; // hearts collected this level
+
+/* ═══════════════════════════
+   INPUT
+═══════════════════════════ */
+const keys={};
+addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d',' '].includes(e.key))e.preventDefault();
+  if(e.key===' ')activateShield();
+});
+addEventListener('keyup',e=>keys[e.key]=false);
+
+document.querySelectorAll('.db[data-dir]').forEach(btn=>{
+  const dir=btn.dataset.dir;
+  btn.addEventListener('mousedown',()=>{if(running&&!won)move(dir);});
+  btn.addEventListener('touchstart',e=>{e.preventDefault();if(running&&!won)move(dir);},{passive:false});
+});
+
+let moveInterval;
+function handleKeys(){
+  if(!running||won)return;
+  if(keys['ArrowUp']   ||keys['w'])move('up');
+  if(keys['ArrowDown'] ||keys['s'])move('down');
+  if(keys['ArrowLeft'] ||keys['a'])move('left');
+  if(keys['ArrowRight']||keys['d'])move('right');
+}
+
+/* ═══════════════════════════
+   GAME FLOW
+═══════════════════════════ */
+function startGame(){
+  level=0;collectedHearts=0;
+  hideAll();
+  document.getElementById('back-lnk').style.display='none';
+  loadLevel();
+}
+
+function loadLevel(){
+  hideAll();
+  const cfg=LEVELS[level];
+  COLS=cfg.cols;ROWS=cfg.rows;
+  lives=cfg.lives;maxLives=cfg.lives;
+  maze=generateMaze(COLS,ROWS);
+  player={r:0,c:0};
+  goal={r:ROWS-1,c:COLS-1};
+  trailPoints=[];particles=[];
+  shieldActive=false;shieldCells=0;
+  invincible=false;levelHearts=0;
+  updateCell();
+
+  // place hearts
+  heartCells=[];trapCells=[];
+  const pool=shufflePool(cfg);
+  for(let i=0;i<cfg.hearts&&i<pool.length;i++) heartCells.push({...pool[i],collected:false});
+  for(let i=cfg.hearts;i<cfg.hearts+cfg.traps&&i<pool.length;i++) trapCells.push({...pool[i],triggered:false});
+  totalHearts=cfg.hearts;
+
+  document.getElementById('level-val').textContent=level+1;
+  document.getElementById('hearts-val').textContent=collectedHearts;
+  updateLivesDisplay();
+
+  // show ability bar in later levels
+  document.getElementById('ability-bar').style.display=level>=2?'flex':'none';
+
+  // show level banner
+  showBanner(cfg.title, cfg.subtitle);
+
+  startTime=Date.now();
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    elapsed=Math.floor((Date.now()-startTime)/1000);
+    const m=Math.floor(elapsed/60),s=elapsed%60;
+    document.getElementById('time-val').textContent=m+':'+(s<10?'0':'')+s;
+  },500);
+
+  running=true;won=false;
+  cancelAnimationFrame(raf);
+  loop();
+  clearInterval(moveInterval);
+  moveInterval=setInterval(handleKeys,115);
+}
+
+function shufflePool(cfg){
+  const pool=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(!(r===0&&c===0)&&!(r===ROWS-1&&c===COLS-1))pool.push({r,c});
+  }
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  return pool;
+}
+
+function showBanner(title,sub){
+  const el=document.getElementById('level-banner');
+  document.getElementById('banner-title').textContent=title;
+  document.getElementById('banner-sub').textContent=sub;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+function hideAll(){
+  ['ov-start','ov-win','ov-dead','ov-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+}
+
+function updateLivesDisplay(){
+  const el=document.getElementById('lives-display');
+  el.textContent='♥'.repeat(lives)+'♡'.repeat(Math.max(0,maxLives-lives));
+}
+
+function updateCell(){
+  const cfg=LEVELS[level];
+  CELL=Math.min(Math.floor((W-40)/COLS),Math.floor((H-100)/ROWS));
+  offsetX=Math.floor((W-COLS*CELL)/2);
+  offsetY=Math.floor((H-ROWS*CELL)/2)+6;
+}
+
+/* ═══════════════════════════
+   MOVEMENT
+═══════════════════════════ */
+function move(dir){
+  const{r,c}=player;
+  const w=maze[r][c].walls;
+  let nr=r,nc=c;
+  if(dir==='up'    &&!w.N)nr--;
+  if(dir==='down'  &&!w.S)nr++;
+  if(dir==='left'  &&!w.W)nc--;
+  if(dir==='right' &&!w.E)nc++;
+  if(nr===r&&nc===c)return;
+  player={r:nr,c:nc};
+
+  // trail
+  trailPoints.push({r:nr,c:nc,age:0});
+  if(trailPoints.length>16)trailPoints.shift();
+
+  // heart?
+  const h=heartCells.find(h=>h.r===nr&&h.c===nc&&!h.collected);
+  if(h){
+    h.collected=true;
+    collectedHearts++;levelHearts++;
+    shieldCells++;
+    document.getElementById('hearts-val').textContent=collectedHearts;
+    spawnCellParticles(nr,nc,'heart');
+  }
+
+  // trap?
+  if(!invincible){
+    const t=trapCells.find(t=>t.r===nr&&t.c===nc&&!t.triggered);
+    if(t){
+      if(shieldActive){
+        shieldActive=false;
+        spawnCellParticles(nr,nc,'shield');
+      } else {
+        t.triggered=true;
+        lives=Math.max(0,lives-1);
+        updateLivesDisplay();
+        spawnCellParticles(nr,nc,'trap');
+        // brief invincibility
+        invincible=true;
+        clearTimeout(invTimer);
+        invTimer=setTimeout(()=>invincible=false,1200);
+        if(lives<=0){loseGame();return;}
+      }
+    }
+  }
+
+  // goal?
+  if(nr===goal.r&&nc===goal.c) winLevel();
+}
+
+function activateShield(){
+  if(shieldCells>=2&&!shieldActive){
+    shieldCells-=2;
+    shieldActive=true;
+    setTimeout(()=>shieldActive=false,8000);
+  }
+}
+
+/* ═══════════════════════════
+   WIN / LOSE
+═══════════════════════════ */
+function winLevel(){
+  won=true;running=false;
+  clearInterval(timerInt);clearInterval(moveInterval);
+  spawnCellParticles(goal.r,goal.c,'win');
+  for(let i=1;i<8;i++)setTimeout(()=>spawnCellParticles(goal.r,goal.c,'win'),i*150);
+
+  const m=Math.floor(elapsed/60),s=elapsed%60;
+  const tStr=m>0?m+'m '+s+'s':s+'s';
+
+  // build dots
+  buildDots('win-dots');
+
+  if(level<LEVELS.length-1){
+    document.getElementById('ov-win').classList.remove('hidden');
+    document.getElementById('win-sub').textContent=
+      `Level ${level+1} done in ${tStr}! You collected ${levelHearts} hearts 💕 — ${LEVELS[level+1].desc}`;
+    document.getElementById('next-btn').textContent='Level '+(level+2)+' →';
+  } else {
+    document.getElementById('ov-done').classList.remove('hidden');
+    document.getElementById('done-sub').textContent=
+      `All 6 levels conquered! Total hearts: ${collectedHearts}. You always find your way to me 💖`;
+    document.getElementById('back-lnk').style.display='';
+  }
+}
+
+function loseGame(){
+  running=false;won=false;
+  clearInterval(timerInt);clearInterval(moveInterval);
+  document.getElementById('ov-dead').classList.remove('hidden');
+  document.getElementById('dead-sub').textContent=
+    `A trap got you on Level ${level+1}. You had ${collectedHearts} hearts. Try this level again! 💔`;
+}
+
+function retryLevel(){
+  hideAll();
+  loadLevel();
+}
+
+function nextLevel(){
+  level++;
+  hideAll();
+  loadLevel();
+}
+
+function buildDots(elId){
+  const el=document.getElementById(elId);
+  el.innerHTML='';
+  LEVELS.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='ldot'+(i<level?' completed':i===level?' current':'');
+    d.textContent=i+1;
+    el.appendChild(d);
+  });
+}
+
+/* ═══════════════════════════
+   PARTICLES
+═══════════════════════════ */
+function spawnCellParticles(r,c,type){
+  const cx=offsetX+c*CELL+CELL/2,cy=offsetY+r*CELL+CELL/2;
+  const map={
+    heart:{chars:['💕','✨','💖','🌸','💗'],n:16,sp:5,g:0.08},
+    trap: {chars:['💀','⚡','😱','✨'],n:14,sp:4,g:0.12},
+    shield:{chars:['🛡️','💕','✨','💫'],n:12,sp:4.5,g:0.08},
+    win:  {chars:['💖','✨','🌸','💕','🎉','💗'],n:20,sp:6,g:0.07},
+  };
+  const m=map[type]||map.heart;
+  for(let i=0;i<m.n;i++){
+    const a=Math.random()*Math.PI*2,sp=m.sp*0.6+Math.random()*m.sp;
+    particles.push({
+      x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,
+      life:1,decay:0.018+Math.random()*0.016,
+      sz:14+Math.random()*12,
+      ch:m.chars[Math.floor(Math.random()*m.chars.length)],
+      g:m.g
+    });
+  }
+}
+
+/* ═══════════════════════════
+   RENDER
+═══════════════════════════ */
+function loop(){
+  animT+=0.025;
+  renderFrame();
+  if(running||particles.length>0) raf=requestAnimationFrame(loop);
+}
+
+function renderFrame(){
+  ctx.clearRect(0,0,W,H);
+  if(!maze)return;
+
+  updateCell();
+  const cfg=LEVELS[level];
+
+  // fog mask setup
+  let fogMask=null;
+  if(cfg.fogRadius>0){
+    fogMask=ctx.createRadialGradient(
+      offsetX+player.c*CELL+CELL/2, offsetY+player.r*CELL+CELL/2, cfg.fogRadius*0.3,
+      offsetX+player.c*CELL+CELL/2, offsetY+player.r*CELL+CELL/2, cfg.fogRadius
+    );
+    fogMask.addColorStop(0,'rgba(0,0,0,0)');
+    fogMask.addColorStop(1,'rgba(0,0,0,1)');
+  }
+
+  // ── Floor & walls ──
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const x=offsetX+c*CELL,y=offsetY+r*CELL;
+      ctx.fillStyle=(r+c)%2===0?cfg.floorA:cfg.floorB;
+      ctx.fillRect(x,y,CELL,CELL);
+    }
+  }
+
+  ctx.save();
+  ctx.strokeStyle=cfg.wallColor;
+  ctx.lineWidth=Math.max(2,CELL*0.1);
+  ctx.lineCap='round';
+  ctx.shadowColor=cfg.wallGlow;
+  ctx.shadowBlur=5;
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const x=offsetX+c*CELL,y=offsetY+r*CELL;
+      const w=maze[r][c].walls;
+      ctx.beginPath();
+      if(w.N){ctx.moveTo(x,y);ctx.lineTo(x+CELL,y);}
+      if(w.E){ctx.moveTo(x+CELL,y);ctx.lineTo(x+CELL,y+CELL);}
+      if(w.S){ctx.moveTo(x,y+CELL);ctx.lineTo(x+CELL,y+CELL);}
+      if(w.W){ctx.moveTo(x,y);ctx.lineTo(x,y+CELL);}
+      ctx.stroke();
+    }
+  }
+  // outer border
+  ctx.strokeStyle='#d94f7a';
+  ctx.lineWidth=Math.max(3,CELL*0.14);
+  ctx.shadowColor='rgba(217,79,122,0.6)';ctx.shadowBlur=14;
+  ctx.strokeRect(offsetX,offsetY,COLS*CELL,ROWS*CELL);
+  ctx.restore();
+
+  // ── Trail ──
+  trailPoints.forEach((t,i)=>{
+    const alpha=(i+1)/trailPoints.length*0.18;
+    const px2=offsetX+t.c*CELL+CELL/2,py2=offsetY+t.r*CELL+CELL/2;
+    ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#f7b8cc';
+    ctx.beginPath();ctx.arc(px2,py2,CELL*0.2,0,Math.PI*2);ctx.fill();ctx.restore();
+  });
+
+  // ── Hearts ──
+  heartCells.forEach(h=>{
+    if(h.collected)return;
+    const px2=offsetX+h.c*CELL+CELL/2,py2=offsetY+h.r*CELL+CELL/2;
+    const pulse=0.85+0.15*Math.sin(animT*2.2+h.r*0.8+h.c*0.6);
+    ctx.save();
+    ctx.font=(CELL*0.52*pulse)+'px serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(247,184,204,0.7)';ctx.shadowBlur=10;
+    ctx.fillText('♥',px2,py2);ctx.restore();
+  });
+
+  // ── Traps ──
+  trapCells.forEach(t=>{
+    if(t.triggered)return;
+    const px2=offsetX+t.c*CELL+CELL/2,py2=offsetY+t.r*CELL+CELL/2;
+    const pulse=0.8+0.2*Math.sin(animT*3+t.r+t.c);
+    ctx.save();
+    ctx.font=(CELL*0.48*pulse)+'px serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(255,60,60,0.6)';ctx.shadowBlur=8;
+    ctx.globalAlpha=0.85;
+    ctx.fillText('💀',px2,py2);ctx.restore();
+  });
+
+  // ── Goal ──
+  const gpx=offsetX+goal.c*CELL+CELL/2,gpy=offsetY+goal.r*CELL+CELL/2;
+  const gpulse=0.88+0.12*Math.sin(animT*1.6);
+  ctx.save();
+  const grd=ctx.createRadialGradient(gpx,gpy,0,gpx,gpy,CELL*0.85);
+  grd.addColorStop(0,'rgba(217,79,122,0.28)');grd.addColorStop(1,'transparent');
+  ctx.fillStyle=grd;ctx.beginPath();ctx.arc(gpx,gpy,CELL*0.85,0,Math.PI*2);ctx.fill();
+  ctx.font=(CELL*0.68*gpulse)+'px serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(247,184,204,1)';ctx.shadowBlur=20;
+  ctx.fillText('💖',gpx,gpy);ctx.restore();
+
+  // ── Player ──
+  const ppx=offsetX+player.c*CELL+CELL/2,ppy=offsetY+player.r*CELL+CELL/2;
+  ctx.save();
+  // shield aura
+  if(shieldActive){
+    const sa=0.2+0.1*Math.sin(animT*4);
+    ctx.globalAlpha=sa;ctx.fillStyle='#f7b8cc';
+    ctx.beginPath();ctx.arc(ppx,ppy,CELL*0.55,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  // invincibility flicker
+  if(invincible&&Math.floor(animT*20)%2===0){ctx.globalAlpha=0.4;}
+  // glow
+  const pgrd=ctx.createRadialGradient(ppx,ppy,0,ppx,ppy,CELL*0.5);
+  pgrd.addColorStop(0,'rgba(247,184,204,0.3)');pgrd.addColorStop(1,'transparent');
+  ctx.globalAlpha*=1;ctx.fillStyle=pgrd;
+  ctx.beginPath();ctx.arc(ppx,ppy,CELL*0.5,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=invincible&&Math.floor(animT*20)%2===0?0.4:1;
+  ctx.font=(CELL*0.6)+'px serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(247,184,204,0.9)';ctx.shadowBlur=14;
+  ctx.fillText('🧡',ppx,ppy);ctx.restore();
+
+  // ── Fog overlay ──
+  if(fogMask){
+    ctx.save();
+    ctx.fillStyle=fogMask;
+    ctx.fillRect(offsetX,offsetY,COLS*CELL,ROWS*CELL);
+    // deeper fog outside
+    ctx.fillStyle='rgba(8,3,10,0.88)';
+    // clear the inner circle from fog rect using composite
+    ctx.restore();
+    // simpler: draw dark rect then punch hole
+    ctx.save();
+    ctx.fillStyle='rgba(8,3,10,0.92)';
+    ctx.fillRect(offsetX,offsetY,COLS*CELL,ROWS*CELL);
+    const pcx=offsetX+player.c*CELL+CELL/2,pcy=offsetY+player.r*CELL+CELL/2;
+    const fgrd=ctx.createRadialGradient(pcx,pcy,cfg.fogRadius*0.25,pcx,pcy,cfg.fogRadius);
+    fgrd.addColorStop(0,'rgba(8,3,10,0)');
+    fgrd.addColorStop(0.7,'rgba(8,3,10,0)');
+    fgrd.addColorStop(1,'rgba(8,3,10,0.92)');
+    ctx.globalCompositeOperation='destination-out';
+    ctx.fillStyle='rgba(0,0,0,1)';
+    ctx.beginPath();ctx.arc(pcx,pcy,cfg.fogRadius,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    // re-draw fog edges
+    ctx.save();
+    ctx.fillStyle=fogMask;
+    ctx.fillRect(offsetX,offsetY,COLS*CELL,ROWS*CELL);
+    ctx.restore();
+  }
+
+  // ── Particles (above fog) ──
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life-=p.decay;
+    ctx.save();ctx.globalAlpha=Math.max(0,p.life);
+    ctx.font=p.sz+'px serif';ctx.textAlign='center';
+    ctx.fillText(p.ch,p.x,p.y);ctx.restore();
+  });
+
+  // ── Shield charge indicator ──
+  if(shieldCells>0&&!shieldActive&&level>=2){
+    ctx.save();
+    ctx.font='0.65rem DM Sans,sans-serif';
+    ctx.fillStyle='rgba(247,184,204,0.55)';
+    ctx.textAlign='left';
+    ctx.fillText('Shield: '+'♥'.repeat(shieldCells)+' / 2 needed', offsetX+4, offsetY-8);
+    ctx.restore();
+  }
+}
+
+// boot render
+loop();
+</script>
+</body>
+</html>
