@@ -1,0 +1,36 @@
+#quiz-container {
+    background-color: #ffe6f1;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 50%;
+    margin: auto;
+    text-align: left;
+}
+
+.question {
+    margin: 20px 0;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #ff0066;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ff3399;
+}
+
+.hidden {
+    display: none;
+}
+
+footer {
+    margin-top: 30px;
+    font-size: 14px;
+}

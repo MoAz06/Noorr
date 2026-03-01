@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liefdesquiz: Hoe goed ken jij me?</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+    <header>
+        <h1>Liefdesquiz: Hoe goed ken jij me?</h1>
+        <p>Beantwoord de vragen over onze relatie en kijk hoe goed je me kent! 💖</p>
+    </header>
+
+    <div id="quiz-container">
+        <form id="quiz-form">
+            <div class="question">
+                <label for="question1">Wat is onze favoriete film?</label>
+                <input type="text" id="question1" required>
+            </div>
+
+            <div class="question">
+                <label for="question2">Waar gingen we op onze eerste date?</label>
+                <input type="text" id="question2" required>
+            </div>
+
+            <div class="question">
+                <label for="question3">Wat is mijn favoriete kleur?</label>
+                <input type="text" id="question3" required>
+            </div>
+
+            <button type="submit">Inzenden</button>
+        </form>
+        <div id="result" class="hidden">
+            <h3>Je score: <span id="score"></span></h3>
+            <p id="score-message"></p>
+            <button onclick="window.location.reload()">Speel opnieuw</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>Veel plezier! 💘</p>
+    </footer>
+
+    <script src="quiz.js"></script>
+</body>
+</html>
