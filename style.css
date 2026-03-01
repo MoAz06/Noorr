@@ -1,7 +1,7 @@
 /* General body styling */
 body {
     font-family: 'Arial', sans-serif;
-    background-image: url('background.jpg'); /* Add your image path here */
+    background-image: url('background.jpg'); /* You can replace this with a URL or your own image */
     background-size: cover;
     background-position: center;
     color: #fff;
@@ -10,41 +10,69 @@ body {
     margin: 0;
 }
 
-/* Styling for the header */
+/* Header styling with background overlay */
 header {
-    background-color: rgba(0, 0, 0, 0.5); /* Dark overlay for better text visibility */
+    background-color: rgba(0, 0, 0, 0.6); /* Dark overlay for better text visibility */
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     width: 80%;
     max-width: 700px;
     margin: 20px auto;
+    animation: fadeIn 2s ease-in-out; /* Fade-in animation */
 }
 
 h1 {
     color: #ff0066;
-    font-size: 36px;
+    font-size: 48px;
     margin-bottom: 20px;
+    font-family: 'Georgia', serif; /* Fancy font for header */
+    animation: slideInLeft 1s ease-out; /* Animation for header */
 }
 
 p {
     font-size: 18px;
+    font-family: 'Arial', sans-serif;
+    animation: slideInRight 1s ease-out; /* Animation for paragraph */
 }
 
-/* Styling for the start quiz button */
+/* Styling for the game list */
+.game-list {
+    margin-top: 30px;
+    animation: fadeInUp 2s ease-in-out; /* Fade-in effect for the game list */
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin: 15px 0;
+}
+
+/* Button Styling */
 .start-quiz-button {
     padding: 15px 30px;
     font-size: 20px;
     background-color: #ff0066;
     color: white;
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: 25px;
     margin-top: 20px;
     display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
+/* Hover effects */
 .start-quiz-button:hover {
     background-color: #ff3399;
+    transform: scale(1.1); /* Slight grow effect */
+}
+
+.start-quiz-button:active {
+    transform: scale(1.05); /* Small shrink effect when clicked */
 }
 
 /* Footer styling */
@@ -52,4 +80,43 @@ footer {
     margin-top: 30px;
     font-size: 14px;
     color: #fff;
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
