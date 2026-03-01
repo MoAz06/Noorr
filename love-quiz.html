@@ -4,43 +4,431 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Love Quiz 💌</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:    #d94f7a;
+      --rose-lt: #f7b8cc;
+      --blush:   #fff0f5;
+      --petal:   #ffe4ef;
+      --deep:    #7b1d42;
+      --text:    #4a1028;
+      --card-bg: rgba(255,255,255,0.72);
+    }
+
     body {
-      background: #fff0f5;
-      font-family: 'Lato', sans-serif;
-      color: #5a1a35;
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+      background: var(--blush);
+    }
+
+    /* layered gradient bg */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%,  #ffd6e7 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 90%,  #ffc2d9 0%, transparent 55%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, #fff0f5 0%, #ffe4ef 100%);
+    }
+
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(217,79,122,0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    #hcanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .page {
+      position: relative;
+      z-index: 2;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
-      text-align: center;
+      padding: 50px 24px 70px;
     }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 6vw, 3.5rem);
-      color: #c03a66;
-      margin-bottom: 16px;
-    }
-    p { font-weight: 300; color: #a0506a; margin-bottom: 32px; line-height: 1.7; }
-    a {
-      background: #e8638a;
-      color: white;
+
+    .back {
+      position: fixed;
+      top: 22px;
+      left: 26px;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--rose);
       text-decoration: none;
-      padding: 12px 28px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      letter-spacing: 0.1em;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    .back:hover { opacity: 1; }
+
+    /* ── Quiz card ── */
+    .quiz-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1.5px solid rgba(255,182,208,0.6);
+      border-radius: 28px;
+      padding: 52px 44px 48px;
+      max-width: 620px;
+      width: 100%;
+      box-shadow:
+        0 4px 24px rgba(200,60,100,0.08),
+        0 1px 0 rgba(255,255,255,0.8) inset;
+      animation: riseIn 0.9s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(36px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .q-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--rose);
+      margin-bottom: 18px;
+    }
+
+    .q-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--deep);
+      margin-bottom: 40px;
+    }
+
+    /* ── Options ── */
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .opt {
+      position: relative;
+      overflow: visible;
+      background: white;
+      border: 2px solid #f5ccd8;
+      border-radius: 16px;
+      padding: 22px 16px;
+      text-align: center;
+      cursor: pointer;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--deep);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      user-select: none;
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .opt:hover:not(.locked) {
+      border-color: var(--rose);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(200,60,100,0.13);
+    }
+
+    .opt.locked { cursor: default; pointer-events: none; }
+
+    /* CORRECT */
+    .opt.correct {
+      border-color: #e8638a !important;
+      background: linear-gradient(135deg, #fff0f5, #ffdce9) !important;
+      animation: correctPulse 0.5s ease;
+    }
+
+    @keyframes correctPulse {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.07); }
+      70%  { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+
+    /* WRONG */
+    .opt.wrong {
+      border-color: #d0c0c5 !important;
+      background: #faf6f7 !important;
+      color: #c0a0aa !important;
+      animation: wrongShake 0.45s ease;
+    }
+
+    @keyframes wrongShake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-7px); }
+      40%      { transform: translateX(7px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(4px); }
+    }
+
+    /* cross overlay inside wrong card */
+    .cross-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 700;
+      color: rgba(160,50,80,0.45);
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+      animation: crossIn 0.4s 0.15s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+
+    @keyframes crossIn {
+      from { opacity: 0; transform: scale(0.2) rotate(-25deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    /* particle canvas */
+    #pcanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── Result ── */
+    .result {
+      margin-top: 36px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s 0.35s, transform 0.5s 0.35s;
+    }
+    .result.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .result-emoji { font-size: 2.2rem; margin-bottom: 10px; }
+    .result-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.45rem;
+      font-style: italic;
+      color: var(--deep);
+      margin-bottom: 6px;
+    }
+    .result-sub {
+      font-size: 0.82rem;
+      font-weight: 300;
+      color: #a0506a;
+    }
+
+    /* flourish */
+    .flourish {
+      text-align: center;
+      margin-bottom: 32px;
+      font-size: 1.4rem;
+      letter-spacing: 0.5em;
+      color: var(--rose-lt);
+    }
+
+    @media (max-width: 480px) {
+      .quiz-card { padding: 36px 24px 36px; }
+      .options { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div style="font-size:3rem;margin-bottom:20px">💌</div>
-  <h1>Love Quiz</h1>
-  <p>This page is being built with love.<br />Check back soon!</p>
-  <a href="index.html">← Back home</a>
+
+<div class="bg"></div>
+<canvas id="hcanvas"></canvas>
+<canvas id="pcanvas"></canvas>
+
+<a href="index.html" class="back">← home</a>
+
+<div class="page">
+  <div class="quiz-card">
+
+    <div class="flourish">♥ ♡ ♥</div>
+
+    <p class="q-label">Question 1 of 1</p>
+    <p class="q-text">What server did we meet?</p>
+
+    <div class="options" id="options">
+      <div class="opt" data-answer="Babey"    onclick="choose(this)">Babey</div>
+      <div class="opt" data-answer="Lovesick" onclick="choose(this)">Lovesick</div>
+      <div class="opt" data-answer="Moshi"    onclick="choose(this)">Moshi</div>
+      <div class="opt" data-answer="Frantic"  onclick="choose(this)">Frantic</div>
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-emoji" id="r-emoji"></div>
+      <div class="result-text"  id="r-text"></div>
+      <div class="result-sub"   id="r-sub"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── Background hearts ── */
+const hc  = document.getElementById('hcanvas');
+const hx  = hc.getContext('2d');
+const resize = () => { hc.width = innerWidth; hc.height = innerHeight; };
+resize(); addEventListener('resize', resize);
+
+const BH = Array.from({length: 32}, () => ({
+  x: Math.random() * innerWidth,
+  y: Math.random() * innerHeight + innerHeight,
+  s: 10 + Math.random() * 22,
+  sp: 0.3 + Math.random() * 0.7,
+  dr: (Math.random()-.5) * 0.4,
+  op: 0.06 + Math.random() * 0.15,
+  c: `hsl(${336+Math.random()*20},82%,${64+Math.random()*20}%)`
+}));
+
+(function abg() {
+  hx.clearRect(0,0,hc.width,hc.height);
+  BH.forEach(h => {
+    h.y -= h.sp; h.x += h.dr;
+    if (h.y < -30) { h.y = hc.height+30; h.x = Math.random()*hc.width; }
+    hx.save();
+    hx.globalAlpha = h.op;
+    hx.fillStyle = h.c;
+    hx.font = h.s+'px serif';
+    hx.fillText('♥', h.x, h.y);
+    hx.restore();
+  });
+  requestAnimationFrame(abg);
+})();
+
+/* ── Particle system ── */
+const pc  = document.getElementById('pcanvas');
+const px  = pc.getContext('2d');
+const szp = () => { pc.width = innerWidth; pc.height = innerHeight; };
+szp(); addEventListener('resize', szp);
+
+let parts = [];
+
+const CORRECT_CHARS = ['♥','♡','💕','💖','✨','🌸','💗','💓'];
+const WRONG_CHARS   = ['💔','😢','😞','😔','🥺','😿'];
+
+function burst(rect, type) {
+  const cx = rect.left + rect.width  / 2;
+  const cy = rect.top  + rect.height / 2;
+  const n  = type === 'correct' ? 32 : 20;
+
+  for (let i = 0; i < n; i++) {
+    const a  = (Math.PI*2/n)*i + (Math.random()-.5)*0.8;
+    const sp = type === 'correct' ? 4+Math.random()*6 : 2+Math.random()*4;
+    parts.push({
+      x: cx, y: cy,
+      vx: Math.cos(a)*sp,
+      vy: Math.sin(a)*sp - (type==='correct' ? 2.5 : 0.5),
+      life: 1,
+      decay: 0.016 + Math.random()*0.018,
+      sz: type==='correct' ? 16+Math.random()*12 : 18+Math.random()*10,
+      ch: type==='correct'
+        ? CORRECT_CHARS[Math.floor(Math.random()*CORRECT_CHARS.length)]
+        : WRONG_CHARS  [Math.floor(Math.random()*WRONG_CHARS.length)],
+      g: type==='correct' ? 0.07 : 0.14
+    });
+  }
+}
+
+// secondary wave burst for correct
+function waveBurst(rect) {
+  for (let w = 0; w < 4; w++) {
+    setTimeout(() => {
+      const ox = (Math.random()-.5)*rect.width*0.8;
+      burst({
+        left: rect.left+rect.width/2+ox - 1,
+        top: rect.top + rect.height*0.2,
+        width:2, height:2
+      }, 'correct');
+    }, w*120);
+  }
+}
+
+(function ap() {
+  px.clearRect(0,0,pc.width,pc.height);
+  parts = parts.filter(p => p.life > 0);
+  parts.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life -= p.decay;
+    px.save();
+    px.globalAlpha = Math.max(0, p.life);
+    px.font = p.sz+'px serif';
+    px.fillText(p.ch, p.x, p.y);
+    px.restore();
+  });
+  requestAnimationFrame(ap);
+})();
+
+/* ── Quiz logic ── */
+const CORRECT = 'Lovesick';
+let done = false;
+
+function choose(el) {
+  if (done) return;
+  done = true;
+  document.querySelectorAll('.opt').forEach(o => o.classList.add('locked'));
+
+  const rect = el.getBoundingClientRect();
+
+  if (el.dataset.answer === CORRECT) {
+    el.classList.add('correct');
+    burst(rect, 'correct');
+    waveBurst(rect);
+    showResult('correct');
+  } else {
+    el.classList.add('wrong');
+
+    // big cross
+    const cross = document.createElement('div');
+    cross.className = 'cross-overlay';
+    cross.textContent = '✕';
+    el.style.position = 'relative';
+    el.appendChild(cross);
+
+    burst(rect, 'wrong');
+
+    // reveal correct after short delay
+    setTimeout(() => {
+      document.querySelectorAll('.opt').forEach(o => {
+        if (o.dataset.answer === CORRECT) o.classList.add('correct');
+      });
+    }, 700);
+
+    showResult('wrong');
+  }
+}
+
+function showResult(type) {
+  const el = document.getElementById('result');
+  document.getElementById('r-emoji').textContent = type==='correct' ? '💖' : '🥺';
+  document.getElementById('r-text').textContent  = type==='correct'
+    ? "Yes!! That's where our story began ♥"
+    : "Aww, not quite!";
+  document.getElementById('r-sub').textContent   = type==='correct'
+    ? "Lovesick — the server that changed everything 🌸"
+    : "It was Lovesick — that's where we first found each other ♡";
+  setTimeout(() => el.classList.add('show'), 250);
+}
+</script>
 </body>
 </html>
