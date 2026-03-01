@@ -15,7 +15,7 @@
       --petal:   #ffe4ef;
       --deep:    #7b1d42;
       --text:    #4a1028;
-      --card-bg: rgba(255,255,255,0.72);
+      --card-bg: rgba(255,255,255,0.75);
     }
 
     body {
@@ -26,139 +26,132 @@
       background: var(--blush);
     }
 
-    /* layered gradient bg */
     .bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
+      position: fixed; inset: 0; z-index: 0;
       background:
         radial-gradient(ellipse 80% 60% at 20% 10%,  #ffd6e7 0%, transparent 60%),
         radial-gradient(ellipse 60% 80% at 80% 90%,  #ffc2d9 0%, transparent 55%),
         radial-gradient(ellipse 100% 100% at 50% 50%, #fff0f5 0%, #ffe4ef 100%);
     }
-
     .bg::after {
       content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(217,79,122,0.06) 1px, transparent 1px);
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(217,79,122,0.05) 1px, transparent 1px);
       background-size: 28px 28px;
     }
 
-    #hcanvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1;
+    #hcanvas, #pcanvas {
+      position: fixed; inset: 0; pointer-events: none;
     }
-
-    .page {
-      position: relative;
-      z-index: 2;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 50px 24px 70px;
-    }
+    #hcanvas { z-index: 1; }
+    #pcanvas { z-index: 999; }
 
     .back {
-      position: fixed;
-      top: 22px;
-      left: 26px;
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--rose);
-      text-decoration: none;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-      z-index: 10;
+      position: fixed; top: 22px; left: 26px; z-index: 10;
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--rose); text-decoration: none; opacity: 0.7; transition: opacity 0.2s;
     }
     .back:hover { opacity: 1; }
 
-    /* ── Quiz card ── */
-    .quiz-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1.5px solid rgba(255,182,208,0.6);
-      border-radius: 28px;
-      padding: 52px 44px 48px;
-      max-width: 620px;
-      width: 100%;
-      box-shadow:
-        0 4px 24px rgba(200,60,100,0.08),
-        0 1px 0 rgba(255,255,255,0.8) inset;
-      animation: riseIn 0.9s cubic-bezier(0.16,1,0.3,1) both;
+    /* ── Progress bar strip ── */
+    .progress-wrap {
+      position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 20;
+      background: rgba(255,182,208,0.3);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--rose-lt), var(--rose));
+      transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+      width: 0%;
     }
 
+    .page {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── Card ── */
+    .quiz-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(255,182,208,0.55);
+      border-radius: 28px;
+      padding: 50px 44px 46px;
+      max-width: 640px;
+      width: 100%;
+      box-shadow: 0 6px 32px rgba(200,60,100,0.09), 0 1px 0 rgba(255,255,255,0.8) inset;
+    }
+
+    /* question screens */
+    .q-screen {
+      display: none;
+      animation: riseIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .q-screen.active { display: block; }
+
     @keyframes riseIn {
-      from { opacity: 0; transform: translateY(36px) scale(0.97); }
+      from { opacity: 0; transform: translateY(28px) scale(0.98); }
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    .flourish {
+      text-align: center; margin-bottom: 28px;
+      font-size: 1.3rem; letter-spacing: 0.5em; color: var(--rose-lt);
+    }
+
     .q-label {
-      font-size: 0.68rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--rose);
-      margin-bottom: 18px;
+      font-size: 0.67rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--rose); margin-bottom: 16px;
     }
 
     .q-text {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.6rem, 4vw, 2.2rem);
-      font-weight: 600;
-      line-height: 1.25;
-      color: var(--deep);
-      margin-bottom: 40px;
+      font-size: clamp(1.5rem, 3.8vw, 2.1rem);
+      font-weight: 600; line-height: 1.25;
+      color: var(--deep); margin-bottom: 36px;
     }
 
     /* ── Options ── */
     .options {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 14px;
     }
+    .options.single-col { grid-template-columns: 1fr; }
 
     .opt {
       position: relative;
-      overflow: visible;
       background: white;
       border: 2px solid #f5ccd8;
       border-radius: 16px;
-      padding: 22px 16px;
+      padding: 20px 16px;
       text-align: center;
       cursor: pointer;
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.25rem;
-      font-weight: 600;
+      font-size: 1.2rem; font-weight: 600;
       color: var(--deep);
       transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
       user-select: none;
-      min-height: 76px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      min-height: 72px;
+      display: flex; align-items: center; justify-content: center;
     }
-
     .opt:hover:not(.locked) {
       border-color: var(--rose);
       transform: translateY(-3px);
       box-shadow: 0 10px 28px rgba(200,60,100,0.13);
     }
-
     .opt.locked { cursor: default; pointer-events: none; }
 
-    /* CORRECT */
     .opt.correct {
       border-color: #e8638a !important;
       background: linear-gradient(135deg, #fff0f5, #ffdce9) !important;
+      color: var(--deep) !important;
       animation: correctPulse 0.5s ease;
     }
-
     @keyframes correctPulse {
       0%   { transform: scale(1); }
       40%  { transform: scale(1.07); }
@@ -166,89 +159,143 @@
       100% { transform: scale(1); }
     }
 
-    /* WRONG */
     .opt.wrong {
       border-color: #d0c0c5 !important;
       background: #faf6f7 !important;
       color: #c0a0aa !important;
       animation: wrongShake 0.45s ease;
     }
-
     @keyframes wrongShake {
       0%,100% { transform: translateX(0); }
-      20%      { transform: translateX(-7px); }
-      40%      { transform: translateX(7px); }
-      60%      { transform: translateX(-4px); }
-      80%      { transform: translateX(4px); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
     }
 
-    /* cross overlay inside wrong card */
     .cross-overlay {
-      position: absolute;
-      inset: 0;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      font-weight: 700;
+      position: absolute; inset: 0; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; font-weight: 700;
       color: rgba(160,50,80,0.45);
-      pointer-events: none;
-      z-index: 5;
+      pointer-events: none; z-index: 5;
       opacity: 0;
-      animation: crossIn 0.4s 0.15s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      animation: crossIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) forwards;
     }
-
     @keyframes crossIn {
       from { opacity: 0; transform: scale(0.2) rotate(-25deg); }
       to   { opacity: 1; transform: scale(1) rotate(0deg); }
     }
 
-    /* particle canvas */
-    #pcanvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 999;
-    }
-
-    /* ── Result ── */
+    /* result block */
     .result {
-      margin-top: 36px;
-      text-align: center;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: opacity 0.5s 0.35s, transform 0.5s 0.35s;
+      margin-top: 32px; text-align: center;
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.5s 0.3s, transform 0.5s 0.3s;
     }
-    .result.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .result-emoji { font-size: 2.2rem; margin-bottom: 10px; }
+    .result.show { opacity: 1; transform: translateY(0); }
+
+    .result-emoji { font-size: 2rem; margin-bottom: 8px; }
     .result-text {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.45rem;
-      font-style: italic;
-      color: var(--deep);
-      margin-bottom: 6px;
+      font-size: 1.35rem; font-style: italic;
+      color: var(--deep); margin-bottom: 6px;
     }
-    .result-sub {
+    .result-sub { font-size: 0.82rem; font-weight: 300; color: #a0506a; }
+
+    /* sticky note style for the "I love you first" disclaimer */
+    .sticky-note {
+      margin-top: 20px;
+      background: #fffde7;
+      border: 1.5px solid #ffe082;
+      border-radius: 10px;
+      padding: 14px 18px;
       font-size: 0.82rem;
-      font-weight: 300;
-      color: #a0506a;
+      color: #7a6000;
+      font-style: italic;
+      line-height: 1.6;
+      transform: rotate(-0.8deg);
+      box-shadow: 2px 3px 10px rgba(0,0,0,0.07);
+      opacity: 0;
+      transition: opacity 0.5s 0.6s, transform 0.5s 0.6s;
+    }
+    .sticky-note.show { opacity: 1; transform: rotate(-0.8deg) translateY(0); }
+
+    /* OLIVE special: chaos styling per option */
+    .opt.olive-a { font-family: 'Georgia', serif; font-size: 1.3rem; }
+    .opt.olive-b { font-family: 'Impact', sans-serif; letter-spacing: 0.05em; font-size: 1.4rem; text-transform: uppercase; }
+    .opt.olive-c { font-family: 'Courier New', monospace; font-size: 1rem; }
+    .opt.olive-d { font-family: 'Comic Sans MS', cursive; font-size: 1.15rem; }
+
+    /* Next button */
+    .next-btn {
+      margin-top: 28px;
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--rose-lt), var(--rose));
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s 0.6s, transform 0.4s 0.6s, box-shadow 0.2s;
+      pointer-events: none;
+    }
+    .next-btn.show {
+      opacity: 1; transform: translateY(0); pointer-events: all;
+    }
+    .next-btn:hover {
+      box-shadow: 0 8px 24px rgba(200,60,100,0.28);
+      transform: translateY(-2px);
     }
 
-    /* flourish */
-    .flourish {
+    /* ── Final score screen ── */
+    #score-screen {
+      display: none;
       text-align: center;
-      margin-bottom: 32px;
-      font-size: 1.4rem;
-      letter-spacing: 0.5em;
-      color: var(--rose-lt);
+      animation: riseIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
     }
+    #score-screen.active { display: block; }
+
+    .score-big {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.5rem, 10vw, 6rem);
+      font-weight: 600;
+      color: var(--rose);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .score-label {
+      font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--rose-lt); margin-bottom: 28px;
+    }
+    .score-msg {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-style: italic;
+      color: var(--deep); margin-bottom: 10px;
+    }
+    .score-sub { font-size: 0.85rem; font-weight: 300; color: #a0506a; margin-bottom: 32px; }
+
+    .play-again {
+      display: inline-block;
+      padding: 13px 32px;
+      background: white;
+      border: 2px solid var(--rose);
+      border-radius: 999px;
+      color: var(--rose);
+      font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .play-again:hover { background: var(--rose); color: white; }
 
     @media (max-width: 480px) {
-      .quiz-card { padding: 36px 24px 36px; }
+      .quiz-card { padding: 36px 22px 36px; }
       .options { grid-template-columns: 1fr; }
     }
   </style>
@@ -259,175 +306,304 @@
 <canvas id="hcanvas"></canvas>
 <canvas id="pcanvas"></canvas>
 
+<div class="progress-wrap"><div class="progress-fill" id="prog"></div></div>
 <a href="index.html" class="back">← home</a>
 
 <div class="page">
-  <div class="quiz-card">
+<div class="quiz-card">
 
+  <!-- ══ Q1 ══ -->
+  <div class="q-screen active" id="q1">
     <div class="flourish">♥ ♡ ♥</div>
-
-    <p class="q-label">Question 1 of 1</p>
+    <p class="q-label">Question 1 of 4</p>
     <p class="q-text">What server did we meet?</p>
-
-    <div class="options" id="options">
-      <div class="opt" data-answer="Babey"    onclick="choose(this)">Babey</div>
-      <div class="opt" data-answer="Lovesick" onclick="choose(this)">Lovesick</div>
-      <div class="opt" data-answer="Moshi"    onclick="choose(this)">Moshi</div>
-      <div class="opt" data-answer="Frantic"  onclick="choose(this)">Frantic</div>
+    <div class="options" id="q1-opts">
+      <div class="opt" data-answer="Babey"    onclick="choose(this,'q1','Lovesick')">Babey</div>
+      <div class="opt" data-answer="Lovesick" onclick="choose(this,'q1','Lovesick')">Lovesick</div>
+      <div class="opt" data-answer="Moshi"    onclick="choose(this,'q1','Lovesick')">Moshi</div>
+      <div class="opt" data-answer="Frantic"  onclick="choose(this,'q1','Lovesick')">Frantic</div>
     </div>
-
-    <div class="result" id="result">
-      <div class="result-emoji" id="r-emoji"></div>
-      <div class="result-text"  id="r-text"></div>
-      <div class="result-sub"   id="r-sub"></div>
+    <div class="result" id="q1-result">
+      <div class="result-emoji" id="q1-emoji"></div>
+      <div class="result-text"  id="q1-text"></div>
+      <div class="result-sub"   id="q1-sub"></div>
     </div>
-
+    <button class="next-btn" id="q1-next" onclick="nextQ('q1','q2',2)">Next question →</button>
   </div>
-</div>
+
+  <!-- ══ Q2 ══ -->
+  <div class="q-screen" id="q2">
+    <div class="flourish">♥ ♡ ♥</div>
+    <p class="q-label">Question 2 of 4</p>
+    <p class="q-text">What day did we start dating?</p>
+    <div class="options" id="q2-opts">
+      <div class="opt" data-answer="24th of July"   onclick="choose(this,'q2','24th of July')">24th of July</div>
+      <div class="opt" data-answer="24th of June"   onclick="choose(this,'q2','24th of July')">24th of June</div>
+      <div class="opt" data-answer="24th of August" onclick="choose(this,'q2','24th of July')">24th of August</div>
+      <div class="opt" data-answer="23rd of July"   onclick="choose(this,'q2','24th of July')">23rd of July</div>
+    </div>
+    <div class="result" id="q2-result">
+      <div class="result-emoji" id="q2-emoji"></div>
+      <div class="result-text"  id="q2-text"></div>
+      <div class="result-sub"   id="q2-sub"></div>
+    </div>
+    <button class="next-btn" id="q2-next" onclick="nextQ('q2','q3',3)">Next question →</button>
+  </div>
+
+  <!-- ══ Q3 ══ -->
+  <div class="q-screen" id="q3">
+    <div class="flourish">♥ ♡ ♥</div>
+    <p class="q-label">Question 3 of 4</p>
+    <p class="q-text">Who said "I love you" first?</p>
+    <div class="options single-col" id="q3-opts">
+      <div class="opt" data-answer="Mo"    onclick="choose(this,'q3','Naomi')">Mo</div>
+      <div class="opt" data-answer="Naomi" onclick="choose(this,'q3','Naomi')">Naomi</div>
+    </div>
+    <div class="result" id="q3-result">
+      <div class="result-emoji" id="q3-emoji"></div>
+      <div class="result-text"  id="q3-text"></div>
+      <div class="result-sub"   id="q3-sub"></div>
+    </div>
+    <div class="sticky-note" id="q3-sticky">
+      📝 Ugh I know IT WAS ME but I couldn't find it so I guess I'll just give this one to you smh
+    </div>
+    <button class="next-btn" id="q3-next" onclick="nextQ('q3','q4',4)">Next question →</button>
+  </div>
+
+  <!-- ══ Q4 — OLIVES ══ -->
+  <div class="q-screen" id="q4">
+    <div class="flourish">♥ ♡ ♥</div>
+    <p class="q-label">Question 4 of 4</p>
+    <p class="q-text">What food do I hate the most?</p>
+    <div class="options" id="q4-opts">
+      <div class="opt olive-a" data-answer="Olives"  onclick="choose(this,'q4','__all__')">Olives</div>
+      <div class="opt olive-b" data-answer="OLIVES"  onclick="choose(this,'q4','__all__')">OLIVES</div>
+      <div class="opt olive-c" data-answer="OlIvEs"  onclick="choose(this,'q4','__all__')">OlIvEs</div>
+      <div class="opt olive-d" data-answer="olives"  onclick="choose(this,'q4','__all__')">olives</div>
+    </div>
+    <div class="result" id="q4-result">
+      <div class="result-emoji" id="q4-emoji"></div>
+      <div class="result-text"  id="q4-text"></div>
+      <div class="result-sub"   id="q4-sub"></div>
+    </div>
+    <button class="next-btn" id="q4-next" onclick="showScore()">See my score ♥</button>
+  </div>
+
+  <!-- ══ SCORE ══ -->
+  <div id="score-screen">
+    <div style="font-size:3rem;margin-bottom:16px">🏆</div>
+    <div class="score-big" id="score-num">0/4</div>
+    <div class="score-label">your final score</div>
+    <div class="score-msg" id="score-msg"></div>
+    <div class="score-sub"  id="score-sub"></div>
+    <a href="love-quiz.html" class="play-again">Play again ♡</a>
+  </div>
+
+</div><!-- end quiz-card -->
+</div><!-- end page -->
 
 <script>
 /* ── Background hearts ── */
-const hc  = document.getElementById('hcanvas');
-const hx  = hc.getContext('2d');
-const resize = () => { hc.width = innerWidth; hc.height = innerHeight; };
-resize(); addEventListener('resize', resize);
+const hc = document.getElementById('hcanvas');
+const hx = hc.getContext('2d');
+const rsH = () => { hc.width = innerWidth; hc.height = innerHeight; };
+rsH(); addEventListener('resize', rsH);
 
-const BH = Array.from({length: 32}, () => ({
-  x: Math.random() * innerWidth,
-  y: Math.random() * innerHeight + innerHeight,
-  s: 10 + Math.random() * 22,
-  sp: 0.3 + Math.random() * 0.7,
-  dr: (Math.random()-.5) * 0.4,
-  op: 0.06 + Math.random() * 0.15,
+const BH = Array.from({length:34}, () => ({
+  x: Math.random()*innerWidth,
+  y: Math.random()*innerHeight + innerHeight,
+  s: 10+Math.random()*22, sp: 0.3+Math.random()*0.7,
+  dr: (Math.random()-.5)*0.4, op: 0.06+Math.random()*0.14,
   c: `hsl(${336+Math.random()*20},82%,${64+Math.random()*20}%)`
 }));
-
-(function abg() {
+(function abg(){
   hx.clearRect(0,0,hc.width,hc.height);
-  BH.forEach(h => {
-    h.y -= h.sp; h.x += h.dr;
-    if (h.y < -30) { h.y = hc.height+30; h.x = Math.random()*hc.width; }
-    hx.save();
-    hx.globalAlpha = h.op;
-    hx.fillStyle = h.c;
-    hx.font = h.s+'px serif';
-    hx.fillText('♥', h.x, h.y);
-    hx.restore();
+  BH.forEach(h=>{
+    h.y-=h.sp; h.x+=h.dr;
+    if(h.y<-30){h.y=hc.height+30;h.x=Math.random()*hc.width;}
+    hx.save(); hx.globalAlpha=h.op; hx.fillStyle=h.c;
+    hx.font=h.s+'px serif'; hx.fillText('♥',h.x,h.y); hx.restore();
   });
   requestAnimationFrame(abg);
 })();
 
-/* ── Particle system ── */
-const pc  = document.getElementById('pcanvas');
-const px  = pc.getContext('2d');
-const szp = () => { pc.width = innerWidth; pc.height = innerHeight; };
-szp(); addEventListener('resize', szp);
+/* ── Particles ── */
+const pc = document.getElementById('pcanvas');
+const px = pc.getContext('2d');
+const rsP = ()=>{ pc.width=innerWidth; pc.height=innerHeight; };
+rsP(); addEventListener('resize', rsP);
 
 let parts = [];
+const CC = ['♥','♡','💕','💖','✨','🌸','💗','💓','🎀'];
+const WC = ['💔','😢','😞','😔','🥺','😿'];
+const OC = ['🫒','🤢','🤮','😤','💀','🫒','NO','🫒'];
 
-const CORRECT_CHARS = ['♥','♡','💕','💖','✨','🌸','💗','💓'];
-const WRONG_CHARS   = ['💔','😢','😞','😔','🥺','😿'];
-
-function burst(rect, type) {
-  const cx = rect.left + rect.width  / 2;
-  const cy = rect.top  + rect.height / 2;
-  const n  = type === 'correct' ? 32 : 20;
-
-  for (let i = 0; i < n; i++) {
-    const a  = (Math.PI*2/n)*i + (Math.random()-.5)*0.8;
-    const sp = type === 'correct' ? 4+Math.random()*6 : 2+Math.random()*4;
+function burst(rect, type){
+  const cx = rect.left+rect.width/2, cy = rect.top+rect.height/2;
+  const chars = type==='olive' ? OC : type==='correct' ? CC : WC;
+  const n = type==='correct'||type==='olive' ? 32 : 22;
+  for(let i=0;i<n;i++){
+    const a=(Math.PI*2/n)*i+(Math.random()-.5)*0.8;
+    const sp=type==='correct'||type==='olive' ? 4+Math.random()*6 : 2+Math.random()*4;
     parts.push({
-      x: cx, y: cy,
-      vx: Math.cos(a)*sp,
-      vy: Math.sin(a)*sp - (type==='correct' ? 2.5 : 0.5),
-      life: 1,
-      decay: 0.016 + Math.random()*0.018,
-      sz: type==='correct' ? 16+Math.random()*12 : 18+Math.random()*10,
-      ch: type==='correct'
-        ? CORRECT_CHARS[Math.floor(Math.random()*CORRECT_CHARS.length)]
-        : WRONG_CHARS  [Math.floor(Math.random()*WRONG_CHARS.length)],
-      g: type==='correct' ? 0.07 : 0.14
+      x:cx, y:cy,
+      vx:Math.cos(a)*sp,
+      vy:Math.sin(a)*sp-(type==='correct'||type==='olive'?2.5:0.5),
+      life:1, decay:0.015+Math.random()*0.018,
+      sz:type==='correct'||type==='olive'?16+Math.random()*12:18+Math.random()*10,
+      ch:chars[Math.floor(Math.random()*chars.length)],
+      g:type==='correct'||type==='olive'?0.07:0.14
     });
   }
 }
-
-// secondary wave burst for correct
-function waveBurst(rect) {
-  for (let w = 0; w < 4; w++) {
-    setTimeout(() => {
-      const ox = (Math.random()-.5)*rect.width*0.8;
-      burst({
-        left: rect.left+rect.width/2+ox - 1,
-        top: rect.top + rect.height*0.2,
-        width:2, height:2
-      }, 'correct');
-    }, w*120);
+function waveBurst(rect,type){
+  for(let w=0;w<4;w++){
+    setTimeout(()=>{
+      const ox=(Math.random()-.5)*rect.width*0.8;
+      burst({left:rect.left+rect.width/2+ox-1,top:rect.top+rect.height*0.2,width:2,height:2},type);
+    },w*130);
   }
 }
-
-(function ap() {
+(function ap(){
   px.clearRect(0,0,pc.width,pc.height);
-  parts = parts.filter(p => p.life > 0);
-  parts.forEach(p => {
-    p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life -= p.decay;
-    px.save();
-    px.globalAlpha = Math.max(0, p.life);
-    px.font = p.sz+'px serif';
-    px.fillText(p.ch, p.x, p.y);
-    px.restore();
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.life-=p.decay;
+    px.save(); px.globalAlpha=Math.max(0,p.life);
+    px.font=p.sz+'px serif'; px.fillText(p.ch,p.x,p.y); px.restore();
   });
   requestAnimationFrame(ap);
 })();
 
-/* ── Quiz logic ── */
-const CORRECT = 'Lovesick';
-let done = false;
+/* ── Quiz state ── */
+let score = 0;
+const ANSWERED = {};
 
-function choose(el) {
-  if (done) return;
-  done = true;
-  document.querySelectorAll('.opt').forEach(o => o.classList.add('locked'));
+function choose(el, qId, correct){
+  if(ANSWERED[qId]) return;
+  ANSWERED[qId] = true;
+
+  const opts = document.querySelectorAll(`#${qId}-opts .opt`);
+  opts.forEach(o=>o.classList.add('locked'));
 
   const rect = el.getBoundingClientRect();
+  const isAll = correct === '__all__';
+  const isRight = isAll || el.dataset.answer === correct;
 
-  if (el.dataset.answer === CORRECT) {
+  if(isRight){
+    score++;
     el.classList.add('correct');
-    burst(rect, 'correct');
-    waveBurst(rect);
-    showResult('correct');
+
+    if(isAll){
+      // ALL options are correct — light them all up one by one
+      opts.forEach((o,i)=>{
+        setTimeout(()=>{
+          o.classList.add('correct');
+          burst(o.getBoundingClientRect(),'olive');
+        }, i*120);
+      });
+      waveBurst(rect,'olive');
+    } else {
+      burst(rect,'correct');
+      waveBurst(rect,'correct');
+    }
+    showResult(qId, 'correct');
   } else {
     el.classList.add('wrong');
-
-    // big cross
     const cross = document.createElement('div');
     cross.className = 'cross-overlay';
     cross.textContent = '✕';
-    el.style.position = 'relative';
+    el.style.position='relative';
     el.appendChild(cross);
-
-    burst(rect, 'wrong');
-
-    // reveal correct after short delay
-    setTimeout(() => {
-      document.querySelectorAll('.opt').forEach(o => {
-        if (o.dataset.answer === CORRECT) o.classList.add('correct');
+    burst(rect,'wrong');
+    setTimeout(()=>{
+      opts.forEach(o=>{
+        if(o.dataset.answer===correct) o.classList.add('correct');
       });
     }, 700);
-
-    showResult('wrong');
+    showResult(qId, 'wrong');
   }
+
+  // show sticky note for q3
+  if(qId==='q3'){
+    setTimeout(()=>{
+      document.getElementById('q3-sticky').classList.add('show');
+    }, 500);
+  }
+
+  // show next button
+  setTimeout(()=>{
+    document.getElementById(`${qId}-next`).classList.add('show');
+  }, 400);
+
+  // update progress bar
+  updateProgress();
 }
 
-function showResult(type) {
-  const el = document.getElementById('result');
-  document.getElementById('r-emoji').textContent = type==='correct' ? '💖' : '🥺';
-  document.getElementById('r-text').textContent  = type==='correct'
-    ? "Yes!! That's where our story began ♥"
-    : "Aww, not quite!";
-  document.getElementById('r-sub').textContent   = type==='correct'
-    ? "Lovesick — the server that changed everything 🌸"
-    : "It was Lovesick — that's where we first found each other ♡";
-  setTimeout(() => el.classList.add('show'), 250);
+const Q_MESSAGES = {
+  q1: {
+    correct: { emoji:'💖', text:"Yes! That's where our story began.", sub:'Lovesick — the server that changed everything 🌸' },
+    wrong:   { emoji:'🥺', text:'Not quite!', sub:"It was Lovesick — that's where we first found each other ♡" }
+  },
+  q2: {
+    correct: { emoji:'🎉', text:'You remembered!! 24th of July 🥹', sub:'The day I became the luckiest person ever ♥' },
+    wrong:   { emoji:'😔', text:'Aww, not that one!', sub:'It was the 24th of July — mark it in your heart ♡' }
+  },
+  q3: {
+    correct: { emoji:'😤', text:'Okay fine. It was Naomi. Allegedly.', sub:'(I maintain I said it first but sure whatever)' },
+    wrong:   { emoji:'🥺', text:'Wrong! It was Naomi!!', sub:'Come on, you know this one ♡' }
+  },
+  q4: {
+    correct: { emoji:'🫒', text:'I. HATE. OLIVES.', sub:'Every single one of those answers was correct and equally disgusting.' },
+    wrong:   { emoji:'🫒', text:'This shouldn\'t even be possible?', sub:'They were ALL olives 😭' }
+  }
+};
+
+function showResult(qId, type){
+  const m = Q_MESSAGES[qId][type];
+  document.getElementById(`${qId}-emoji`).textContent = m.emoji;
+  document.getElementById(`${qId}-text`).textContent  = m.text;
+  document.getElementById(`${qId}-sub`).textContent   = m.sub;
+  setTimeout(()=>document.getElementById(`${qId}-result`).classList.add('show'), 250);
+}
+
+function nextQ(fromId, toId, qNum){
+  document.getElementById(fromId).classList.remove('active');
+  document.getElementById(toId).classList.add('active');
+  updateProgress(qNum);
+}
+
+function updateProgress(qNum){
+  const n = qNum || Object.keys(ANSWERED).length;
+  document.getElementById('prog').style.width = (n/4*100)+'%';
+}
+
+function showScore(){
+  document.getElementById('q4').classList.remove('active');
+  document.getElementById('score-screen').classList.add('active');
+  document.getElementById('score-num').textContent = score+'/4';
+  document.getElementById('prog').style.width = '100%';
+
+  // massive heart explosion
+  for(let i=0;i<6;i++){
+    setTimeout(()=>{
+      burst({
+        left: innerWidth/2 - 40 + Math.random()*80,
+        top:  innerHeight/2 - 60,
+        width:80, height:40
+      },'correct');
+    }, i*150);
+  }
+
+  const msgs = [
+    { min:4, emoji:'💯', msg:'Perfect score! You know us inside out.', sub:'I love you so much 💖' },
+    { min:3, emoji:'🥰', msg:'Almost perfect! Pretty impressive tbh.', sub:'Close enough, I still love you ♥' },
+    { min:2, emoji:'😅', msg:'Half marks… we need to talk lol.', sub:'Just kidding. I love you anyway ♡' },
+    { min:0, emoji:'💀', msg:'Okay but did you even try?', sub:'I still love you but wow 😭' }
+  ];
+  const m = msgs.find(m=>score>=m.min);
+  document.getElementById('score-msg').textContent = m.emoji+' '+m.msg;
+  document.getElementById('score-sub').textContent = m.sub;
 }
 </script>
 </body>
