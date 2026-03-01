@@ -1,45 +1,76 @@
-/* General body styling */
 body {
     font-family: 'Arial', sans-serif;
-    background-image: url('background.jpg'); /* You can replace this with a URL or your own image */
+    background-color: #ffccf2; /* Soft pink background */
+    background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); /* Subtle texture */
     background-size: cover;
-    background-position: center;
     color: #fff;
     text-align: center;
     padding: 50px;
     margin: 0;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Header styling with background overlay */
+/* Header styling */
 header {
-    background-color: rgba(0, 0, 0, 0.6); /* Dark overlay for better text visibility */
+    background-color: rgba(255, 0, 102, 0.7); /* Pink with transparency */
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     width: 80%;
     max-width: 700px;
     margin: 20px auto;
-    animation: fadeIn 2s ease-in-out; /* Fade-in animation */
+    font-family: 'Georgia', serif;
+    animation: fadeIn 2s ease-in-out;
 }
 
 h1 {
-    color: #ff0066;
+    color: #fff;
     font-size: 48px;
     margin-bottom: 20px;
-    font-family: 'Georgia', serif; /* Fancy font for header */
-    animation: slideInLeft 1s ease-out; /* Animation for header */
 }
 
 p {
     font-size: 18px;
-    font-family: 'Arial', sans-serif;
-    animation: slideInRight 1s ease-out; /* Animation for paragraph */
 }
 
-/* Styling for the game list */
+/* Floating hearts */
+@keyframes floatHearts {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-50px);
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.heart {
+    position: absolute;
+    font-size: 2rem;
+    color: #ff66b2;
+    animation: floatHearts 3s ease-in-out infinite;
+    z-index: 0;
+}
+
+.heart:nth-child(odd) {
+    animation-duration: 3.5s;
+}
+
+.heart:nth-child(even) {
+    animation-duration: 4s;
+    animation-delay: 0.5s;
+}
+
+/* Game list styling */
 .game-list {
     margin-top: 30px;
-    animation: fadeInUp 2s ease-in-out; /* Fade-in effect for the game list */
+    animation: fadeInUp 2s ease-in-out;
 }
 
 ul {
@@ -51,7 +82,6 @@ li {
     margin: 15px 0;
 }
 
-/* Button Styling */
 .start-quiz-button {
     padding: 15px 30px;
     font-size: 20px;
@@ -65,14 +95,13 @@ li {
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-/* Hover effects */
 .start-quiz-button:hover {
     background-color: #ff3399;
-    transform: scale(1.1); /* Slight grow effect */
+    transform: scale(1.1);
 }
 
 .start-quiz-button:active {
-    transform: scale(1.05); /* Small shrink effect when clicked */
+    transform: scale(1.05);
 }
 
 /* Footer styling */
@@ -82,31 +111,13 @@ footer {
     color: #fff;
 }
 
-/* Keyframe animations */
+/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
     }
     to {
         opacity: 1;
-    }
-}
-
-@keyframes slideInLeft {
-    from {
-        transform: translateX(-100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-    }
-    to {
-        transform: translateX(0);
     }
 }
 
