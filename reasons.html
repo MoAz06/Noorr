@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reasons I Love You 💕</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:    #d94f7a;
+      --rose-lt: #f7b8cc;
+      --blush:   #fff0f5;
+      --deep:    #7b1d42;
+      --card-bg: rgba(255,255,255,0.80);
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--blush);
+      overflow-x: hidden;
+      color: var(--deep);
+    }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 15% 5%,  #ffd6e7 0%, transparent 55%),
+        radial-gradient(ellipse 60% 70% at 85% 95%,  #ffc2d9 0%, transparent 50%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, #fff0f5 0%, #ffe4ef 100%);
+    }
+    .bg::after {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(217,79,122,0.055) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+
+    #hcanvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+    #pcanvas { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+
+    .back {
+      position: fixed; top: 22px; left: 26px; z-index: 10;
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--rose); text-decoration: none; opacity: 0.7; transition: opacity 0.2s;
+    }
+    .back:hover { opacity: 1; }
+
+    /* ── Counter badge ── */
+    .counter {
+      position: fixed; top: 20px; right: 26px; z-index: 10;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem; color: var(--rose);
+      opacity: 0.8;
+    }
+
+    .page {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── Title (shows at start) ── */
+    .title-block {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeUp 0.8s ease both;
+    }
+    .title-eye {
+      font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--rose); margin-bottom: 12px;
+    }
+    .title-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 600; line-height: 1.2;
+      color: var(--deep);
+    }
+    .title-h1 em { font-style: italic; color: var(--rose); }
+    .title-sub {
+      margin-top: 10px; font-size: 0.85rem; font-weight: 300;
+      color: #a0506a; max-width: 320px; margin-inline: auto; line-height: 1.6;
+    }
+
+    /* ── Card ── */
+    .card-wrap {
+      perspective: 1000px;
+      width: min(480px, 92vw);
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(255,182,208,0.6);
+      border-radius: 28px;
+      padding: 56px 44px 52px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(200,60,100,0.1), 0 1px 0 rgba(255,255,255,0.9) inset;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+    .card:hover { box-shadow: 0 16px 60px rgba(200,60,100,0.16), 0 1px 0 rgba(255,255,255,0.9) inset; }
+
+    /* shimmer on hover */
+    .card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .card-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--rose-lt); margin-bottom: 24px;
+    }
+
+    .card-reason {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 400; line-height: 1.45;
+      color: var(--deep);
+      min-height: 120px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-reason em { font-style: italic; color: var(--rose); }
+
+    .card-hint {
+      margin-top: 32px;
+      font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--rose-lt);
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 0.5; } 50% { opacity: 1; }
+    }
+
+    /* card flip animation */
+    .card.flip-out {
+      animation: flipOut 0.3s ease forwards;
+    }
+    .card.flip-in {
+      animation: flipIn 0.35s ease both;
+    }
+    @keyframes flipOut {
+      to { opacity: 0; transform: rotateY(90deg) scale(0.95); }
+    }
+    @keyframes flipIn {
+      from { opacity: 0; transform: rotateY(-90deg) scale(0.95); }
+      to   { opacity: 1; transform: rotateY(0deg) scale(1); }
+    }
+
+    /* progress dots */
+    .dots {
+      display: flex; gap: 6px; justify-content: center;
+      margin-top: 28px; flex-wrap: wrap; max-width: 480px;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #f5ccd8; transition: background 0.4s, transform 0.4s;
+    }
+    .dot.done   { background: var(--rose-lt); }
+    .dot.active { background: var(--rose); transform: scale(1.4); }
+
+    /* end state */
+    .end-msg {
+      display: none; text-align: center;
+      animation: fadeUp 0.8s ease both;
+    }
+    .end-msg.show { display: block; }
+    .end-heart { font-size: 4rem; margin-bottom: 20px; }
+    .end-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-style: italic; color: var(--deep); margin-bottom: 12px;
+    }
+    .end-sub { font-size: 0.9rem; font-weight: 300; color: #a0506a; margin-bottom: 32px; line-height: 1.7; }
+    .restart-btn {
+      display: inline-block; padding: 13px 32px;
+      background: white; border: 2px solid var(--rose); border-radius: 999px;
+      color: var(--rose); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none; transition: background 0.2s, color 0.2s;
+    }
+    .restart-btn:hover { background: var(--rose); color: white; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 40px 26px 38px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+<canvas id="hcanvas"></canvas>
+<canvas id="pcanvas"></canvas>
+
+<a href="index.html" class="back">← home</a>
+<div class="counter" id="counter">1 / 32</div>
+
+<div class="page">
+
+  <div class="title-block">
+    <p class="title-eye">for Naomi, always</p>
+    <h1 class="title-h1">Reasons why I love<br/><em>my wife</em> 💕</h1>
+    <p class="title-sub">Tap the card to reveal the next reason.</p>
+  </div>
+
+  <div class="card-wrap">
+    <div class="card" id="card" onclick="nextReason()">
+      <p class="card-num" id="card-num">No. 1</p>
+      <p class="card-reason" id="card-reason"></p>
+      <p class="card-hint" id="card-hint">tap to reveal the next ♥</p>
+    </div>
+  </div>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="end-msg" id="end-msg">
+    <div class="end-heart">💖</div>
+    <div class="end-title">And so many more…</div>
+    <div class="end-sub">
+      These are just 32 of the infinite reasons.<br/>
+      I love you more than words can say, Naomi. ♥
+    </div>
+    <span class="restart-btn" onclick="restart()">Read them again ♡</span>
+  </div>
+
+</div>
+
+<script>
+const REASONS = [
+  "I love the way you love me.",
+  "I love the way you treat me.",
+  "I love how funny you are.",
+  "I love how mature you are.",
+  "I love how I can be myself with you.",
+  "I love how I feel safe with you.",
+  "I love how I feel at ease with you.",
+  "I love how comfortable I am with you.",
+  "I love how much fun it is to be around you.",
+  "I love how funny you are — it never gets old.",
+  "I love your humor.",
+  "I love how kind you are.",
+  "I love how caring you are.",
+  "I love how beautiful your eyes are.",
+  "I love how beautiful your smile is.",
+  "I love how beautiful your gorgeous nose is.",
+  "I love how beautiful your hair is.",
+  "I love how beautiful your cheeks are.",
+  "I love how full your lips are.",
+  "I love how all your facial features match perfectly.",
+  "I love how kissable your face looks.",
+  "I love your eyebrows.",
+  "I love how dedicated you are with your studies.",
+  "I love how open you are with me.",
+  "I love how you tell me your problems.",
+  "I love how you know you're never a burden to me.",
+  "I love how you know you're never a chore to me.",
+  "I love how you know that I want to marry you.",
+  "I love how similar our music taste is.",
+  "I love how well we get along.",
+  "I love how you are always there for me.",
+  "I love how you never lost faith in me."
+];
+
+/* ── Background hearts ── */
+const hc = document.getElementById('hcanvas');
+const hx = hc.getContext('2d');
+const rsH = () => { hc.width = innerWidth; hc.height = innerHeight; };
+rsH(); addEventListener('resize', rsH);
+const BH = Array.from({length:36}, () => ({
+  x: Math.random()*innerWidth, y: Math.random()*innerHeight+innerHeight,
+  s: 10+Math.random()*24, sp: 0.25+Math.random()*0.65,
+  dr: (Math.random()-.5)*0.35, op: 0.05+Math.random()*0.13,
+  c: `hsl(${336+Math.random()*22},80%,${64+Math.random()*22}%)`
+}));
+(function abg(){
+  hx.clearRect(0,0,hc.width,hc.height);
+  BH.forEach(h=>{
+    h.y-=h.sp; h.x+=h.dr;
+    if(h.y<-30){h.y=hc.height+30; h.x=Math.random()*hc.width;}
+    hx.save(); hx.globalAlpha=h.op; hx.fillStyle=h.c;
+    hx.font=h.s+'px serif'; hx.fillText('♥',h.x,h.y); hx.restore();
+  });
+  requestAnimationFrame(abg);
+})();
+
+/* ── Particles ── */
+const pc = document.getElementById('pcanvas');
+const px = pc.getContext('2d');
+const rsP = ()=>{ pc.width=innerWidth; pc.height=innerHeight; };
+rsP(); addEventListener('resize', rsP);
+let parts = [];
+const CC = ['♥','♡','💕','💖','✨','🌸','💗','💓','🎀','🌷'];
+function burst(rect){
+  const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  for(let i=0;i<20;i++){
+    const a=Math.random()*Math.PI*2, sp=2+Math.random()*5;
+    parts.push({
+      x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-2,
+      life:1, decay:0.018+Math.random()*0.015,
+      sz:14+Math.random()*12, ch:CC[Math.floor(Math.random()*CC.length)], g:0.07
+    });
+  }
+}
+(function ap(){
+  px.clearRect(0,0,pc.width,pc.height);
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.life-=p.decay;
+    px.save(); px.globalAlpha=Math.max(0,p.life);
+    px.font=p.sz+'px serif'; px.fillText(p.ch,p.x,p.y); px.restore();
+  });
+  requestAnimationFrame(ap);
+})();
+
+/* ── Quiz state ── */
+let current = 0;
+
+// build dots
+const dotsEl = document.getElementById('dots');
+REASONS.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.id = 'dot-'+i;
+  dotsEl.appendChild(d);
+});
+
+function renderCard(idx, animate){
+  const card = document.getElementById('card');
+  const show = () => {
+    document.getElementById('card-num').textContent = 'No. ' + (idx+1);
+    document.getElementById('card-reason').textContent = REASONS[idx];
+    document.getElementById('card-hint').textContent =
+      idx < REASONS.length-1 ? 'tap for the next one ♥' : 'tap to finish ♥';
+    document.getElementById('counter').textContent = (idx+1)+' / '+REASONS.length;
+    // dots
+    document.querySelectorAll('.dot').forEach((d,i)=>{
+      d.className = 'dot' + (i<idx?' done': i===idx?' active':'');
+    });
+    if(animate){
+      card.classList.remove('flip-out');
+      card.classList.add('flip-in');
+      card.addEventListener('animationend', ()=>card.classList.remove('flip-in'), {once:true});
+    }
+  };
+  if(animate){
+    card.classList.add('flip-out');
+    card.addEventListener('animationend', show, {once:true});
+  } else {
+    show();
+  }
+}
+
+function nextReason(){
+  const card = document.getElementById('card');
+  const rect = card.getBoundingClientRect();
+  burst(rect);
+
+  if(current < REASONS.length - 1){
+    current++;
+    renderCard(current, true);
+  } else {
+    // show end
+    card.style.display = 'none';
+    dotsEl.style.display = 'none';
+    document.getElementById('counter').style.display = 'none';
+    document.getElementById('end-msg').classList.add('show');
+    // big finale burst
+    for(let i=0;i<8;i++){
+      setTimeout(()=>{
+        burst({
+          left: innerWidth/2-60+Math.random()*120,
+          top: innerHeight/2-80,
+          width:120, height:80
+        });
+      }, i*140);
+    }
+  }
+}
+
+function restart(){
+  current = 0;
+  document.getElementById('card').style.display = '';
+  dotsEl.style.display = '';
+  document.getElementById('counter').style.display = '';
+  document.getElementById('end-msg').classList.remove('show');
+  renderCard(0, false);
+}
+
+// init
+renderCard(0, false);
+</script>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Songs 🎵</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:    #d94f7a;
+      --rose-lt: #f7b8cc;
+      --blush:   #fff0f5;
+      --deep:    #7b1d42;
+      --card-bg: rgba(255,255,255,0.78);
+      --dark:    #2a0a18;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--blush);
+      overflow-x: hidden;
+      color: var(--deep);
+    }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 10% 8%,  #ffd6e7 0%, transparent 55%),
+        radial-gradient(ellipse 55% 70% at 90% 92%,  #ffc2d9 0%, transparent 50%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, #fff0f5 0%, #ffe4ef 100%);
+    }
+    .bg::after {
+      content:''; position:absolute; inset:0;
+      background-image: radial-gradient(circle, rgba(217,79,122,0.055) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+
+    #hcanvas { position:fixed; inset:0; pointer-events:none; z-index:1; }
+
+    .back {
+      position:fixed; top:22px; left:26px; z-index:10;
+      font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase;
+      color:var(--rose); text-decoration:none; opacity:0.7; transition:opacity 0.2s;
+    }
+    .back:hover { opacity:1; }
+
+    .page {
+      position:relative; z-index:2;
+      min-height:100vh;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:60px 24px 80px; gap:28px;
+    }
+
+    /* ── Header ── */
+    .header { text-align:center; animation: fadeUp 0.8s ease both; }
+    .header-eye {
+      font-size:0.68rem; letter-spacing:0.35em; text-transform:uppercase;
+      color:var(--rose); margin-bottom:10px;
+    }
+    .header-h1 {
+      font-family:'Cormorant Garamond', serif;
+      font-size:clamp(1.8rem, 5vw, 2.8rem); font-weight:600;
+      color:var(--deep); line-height:1.2;
+    }
+    .header-h1 em { font-style:italic; color:var(--rose); }
+    .header-sub {
+      margin-top:8px; font-size:0.82rem; font-weight:300;
+      color:#a0506a;
+    }
+
+    /* ── Player card ── */
+    .player-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(255,182,208,0.6);
+      border-radius: 28px;
+      padding: 40px 40px 36px;
+      width: min(480px, 92vw);
+      box-shadow: 0 8px 40px rgba(200,60,100,0.1), 0 1px 0 rgba(255,255,255,0.9) inset;
+      animation: riseIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s both;
+    }
+
+    @keyframes riseIn {
+      from { opacity:0; transform:translateY(30px) scale(0.97); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    /* album art placeholder — animated vinyl */
+    .vinyl-wrap {
+      position:relative; width:160px; height:160px;
+      margin:0 auto 28px;
+    }
+    .vinyl {
+      width:100%; height:100%; border-radius:50%;
+      background: conic-gradient(
+        #1a0a10 0deg, #2e0f1c 20deg, #1a0a10 40deg,
+        #2e0f1c 60deg, #1a0a10 80deg, #2e0f1c 100deg,
+        #1a0a10 120deg, #2e0f1c 140deg, #1a0a10 160deg,
+        #2e0f1c 180deg, #1a0a10 200deg, #2e0f1c 220deg,
+        #1a0a10 240deg, #2e0f1c 260deg, #1a0a10 280deg,
+        #2e0f1c 300deg, #1a0a10 320deg, #2e0f1c 340deg, #1a0a10 360deg
+      );
+      box-shadow: 0 0 0 3px #3a1020, 0 8px 30px rgba(0,0,0,0.35);
+      transition: animation-play-state 0.3s;
+    }
+    .vinyl.spinning { animation: spin 4s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* center hole + label */
+    .vinyl::after {
+      content:'♥';
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem; color:var(--rose);
+    }
+    .vinyl-hole {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:44px; height:44px; border-radius:50%;
+      background: var(--card-bg);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.2rem; z-index:2;
+      box-shadow: 0 0 0 2px rgba(200,60,100,0.2);
+    }
+
+    /* song info */
+    .song-title {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.4rem; font-weight:600;
+      color:var(--deep); text-align:center;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      margin-bottom:4px;
+    }
+    .song-artist {
+      font-size:0.82rem; font-weight:300; color:#a0506a;
+      text-align:center; margin-bottom:6px;
+    }
+    .song-note {
+      font-family:'Cormorant Garamond', serif;
+      font-size:0.88rem; font-style:italic;
+      color:var(--rose-lt); text-align:center; margin-bottom:24px;
+      min-height:1.4em;
+    }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      position:relative; height:4px; background:rgba(217,79,122,0.15);
+      border-radius:99px; margin-bottom:8px; cursor:pointer;
+    }
+    .progress-fill {
+      height:100%; background:linear-gradient(90deg, var(--rose-lt), var(--rose));
+      border-radius:99px; width:0%; transition:width 0.4s linear;
+      pointer-events:none;
+    }
+    .progress-thumb {
+      position:absolute; top:50%; transform:translate(-50%,-50%);
+      width:12px; height:12px; border-radius:50%;
+      background:var(--rose); left:0%;
+      box-shadow:0 0 0 3px rgba(217,79,122,0.2);
+      pointer-events:none;
+    }
+    .time-row {
+      display:flex; justify-content:space-between;
+      font-size:0.7rem; color:#c08099; margin-bottom:24px;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display:flex; align-items:center; justify-content:center; gap:20px;
+    }
+    .ctrl-btn {
+      background:none; border:none; cursor:pointer;
+      color:var(--rose); font-size:1.4rem;
+      opacity:0.7; transition:opacity 0.2s, transform 0.15s;
+      padding:6px; line-height:1;
+    }
+    .ctrl-btn:hover { opacity:1; transform:scale(1.12); }
+
+    .play-btn {
+      width:56px; height:56px; border-radius:50%;
+      background:linear-gradient(135deg, var(--rose-lt), var(--rose));
+      border:none; cursor:pointer;
+      color:white; font-size:1.3rem;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 6px 20px rgba(200,60,100,0.3);
+      transition:transform 0.15s, box-shadow 0.15s;
+    }
+    .play-btn:hover { transform:scale(1.07); box-shadow:0 10px 28px rgba(200,60,100,0.38); }
+    .play-btn:active { transform:scale(0.95); }
+
+    /* volume */
+    .volume-row {
+      display:flex; align-items:center; gap:10px; margin-top:22px;
+    }
+    .vol-icon { font-size:0.9rem; color:#c08099; }
+    .vol-slider {
+      -webkit-appearance:none; appearance:none;
+      flex:1; height:4px; border-radius:99px;
+      background:rgba(217,79,122,0.2); outline:none; cursor:pointer;
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance:none; width:13px; height:13px;
+      border-radius:50%; background:var(--rose); cursor:pointer;
+    }
+    .vol-slider::-moz-range-thumb {
+      width:13px; height:13px; border-radius:50%;
+      background:var(--rose); border:none; cursor:pointer;
+    }
+
+    /* ── Song list ── */
+    .song-list {
+      width:min(480px, 92vw);
+      animation: riseIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s both;
+    }
+    .song-list-title {
+      font-size:0.68rem; letter-spacing:0.3em; text-transform:uppercase;
+      color:var(--rose); margin-bottom:14px; padding-left:4px;
+    }
+
+    .song-item {
+      display:flex; align-items:center; gap:14px;
+      background:var(--card-bg);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1.5px solid rgba(255,182,208,0.45);
+      border-radius:16px; padding:14px 18px;
+      margin-bottom:10px; cursor:pointer;
+      transition:border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .song-item:hover { border-color:var(--rose); transform:translateX(4px); box-shadow:0 4px 18px rgba(200,60,100,0.1); }
+    .song-item.active { border-color:var(--rose); background:rgba(255,182,208,0.18); }
+
+    .song-item-num {
+      font-family:'Cormorant Garamond', serif;
+      font-size:0.9rem; color:var(--rose-lt); min-width:20px; text-align:center;
+    }
+    .song-item.active .song-item-num { color:var(--rose); }
+    .song-item-info { flex:1; min-width:0; }
+    .song-item-title {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1rem; font-weight:600; color:var(--deep);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .song-item-artist {
+      font-size:0.75rem; font-weight:300; color:#a0506a;
+    }
+    .song-item-dur { font-size:0.75rem; color:#c08099; }
+
+    /* playing bars animation */
+    .bars {
+      display:none; align-items:flex-end; gap:2px; height:18px;
+    }
+    .song-item.active.playing .bars { display:flex; }
+    .song-item.active.playing .song-item-num { display:none; }
+    .bar {
+      width:3px; background:var(--rose); border-radius:2px;
+      animation: barAnim 0.8s ease-in-out infinite;
+    }
+    .bar:nth-child(2) { animation-delay:0.15s; }
+    .bar:nth-child(3) { animation-delay:0.3s; }
+    @keyframes barAnim {
+      0%,100% { height:4px; } 50% { height:16px; }
+    }
+
+    /* note about adding songs */
+    .add-note {
+      width:min(480px,92vw); text-align:center;
+      font-size:0.75rem; font-weight:300; color:#c08099;
+      line-height:1.6;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @media(max-width:480px){
+      .player-card { padding:32px 24px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+<canvas id="hcanvas"></canvas>
+<a href="index.html" class="back">← home</a>
+
+<div class="page">
+
+  <div class="header">
+    <p class="header-eye">a playlist for you</p>
+    <h1 class="header-h1">Our <em>Songs</em> 🎵</h1>
+    <p class="header-sub">The soundtrack to us.</p>
+  </div>
+
+  <!-- Player -->
+  <div class="player-card">
+    <div class="vinyl-wrap">
+      <div class="vinyl" id="vinyl"></div>
+      <div class="vinyl-hole">♥</div>
+    </div>
+
+    <div class="song-title" id="player-title">No song selected</div>
+    <div class="song-artist" id="player-artist">—</div>
+    <div class="song-note"   id="player-note"></div>
+
+    <div class="progress-wrap" id="prog-wrap" onclick="seekTo(event)">
+      <div class="progress-fill"  id="prog-fill"></div>
+      <div class="progress-thumb" id="prog-thumb"></div>
+    </div>
+    <div class="time-row">
+      <span id="time-cur">0:00</span>
+      <span id="time-tot">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevSong()" title="Previous">⏮</button>
+      <button class="play-btn" id="play-btn" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" onclick="nextSong()" title="Next">⏭</button>
+    </div>
+
+    <div class="volume-row">
+      <span class="vol-icon">🔈</span>
+      <input type="range" class="vol-slider" id="vol" min="0" max="1" step="0.01" value="0.8" oninput="setVol(this.value)">
+      <span class="vol-icon">🔊</span>
+    </div>
+  </div>
+
+  <!-- Song list -->
+  <div class="song-list">
+    <p class="song-list-title">Playlist</p>
+    <div id="song-list-items"></div>
+  </div>
+
+  <p class="add-note">
+    🎵 To add your songs: open <code>our-songs.html</code> and edit the <code>SONGS</code> array<br/>
+    with the song title, artist, a little note, and the audio file path.
+  </p>
+
+</div>
+
+<script>
+/* ── Song data — edit this! ── */
+const SONGS = [
+  {
+    title:  "Your Song Here",
+    artist: "Artist Name",
+    note:   "Add a little note about what this song means ♥",
+    src:    "",   // path to your audio file e.g. "audio/song1.mp3"
+    duration: "3:24"
+  },
+  {
+    title:  "Another Song",
+    artist: "Artist Name",
+    note:   "Why this song reminds you of her 🌸",
+    src:    "",
+    duration: "3:52"
+  },
+  {
+    title:  "A Third Song",
+    artist: "Artist Name",
+    note:   "This one always makes me think of you ♡",
+    src:    "",
+    duration: "4:01"
+  }
+];
+
+/* ── Background hearts ── */
+const hc=document.getElementById('hcanvas');
+const hx=hc.getContext('2d');
+const rsH=()=>{hc.width=innerWidth;hc.height=innerHeight;};
+rsH(); addEventListener('resize',rsH);
+const BH=Array.from({length:34},()=>({
+  x:Math.random()*innerWidth, y:Math.random()*innerHeight+innerHeight,
+  s:10+Math.random()*22, sp:0.25+Math.random()*0.6,
+  dr:(Math.random()-.5)*0.35, op:0.05+Math.random()*0.13,
+  c:`hsl(${336+Math.random()*22},80%,${64+Math.random()*22}%)`
+}));
+(function abg(){
+  hx.clearRect(0,0,hc.width,hc.height);
+  BH.forEach(h=>{
+    h.y-=h.sp; h.x+=h.dr;
+    if(h.y<-30){h.y=hc.height+30;h.x=Math.random()*hc.width;}
+    hx.save();hx.globalAlpha=h.op;hx.fillStyle=h.c;
+    hx.font=h.s+'px serif';hx.fillText('♥',h.x,h.y);hx.restore();
+  });
+  requestAnimationFrame(abg);
+})();
+
+/* ── Player state ── */
+let audio = new Audio();
+let currentIdx = -1;
+let isPlaying = false;
+
+audio.volume = 0.8;
+
+audio.addEventListener('timeupdate', updateProgress);
+audio.addEventListener('ended', () => { nextSong(); });
+audio.addEventListener('loadedmetadata', () => { updateProgress(); });
+
+function fmt(s){ const m=Math.floor(s/60); return m+':'+(Math.floor(s%60)).toString().padStart(2,'0'); }
+
+function updateProgress(){
+  const dur = audio.duration || 0;
+  const cur = audio.currentTime || 0;
+  const pct = dur ? (cur/dur*100) : 0;
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-thumb').style.left = pct+'%';
+  document.getElementById('time-cur').textContent = fmt(cur);
+  document.getElementById('time-tot').textContent = fmt(dur);
+}
+
+function seekTo(e){
+  if(!audio.duration) return;
+  const wrap = document.getElementById('prog-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  audio.currentTime = pct * audio.duration;
+}
+
+function loadSong(idx){
+  const s = SONGS[idx];
+  currentIdx = idx;
+
+  document.getElementById('player-title').textContent  = s.title;
+  document.getElementById('player-artist').textContent = s.artist;
+  document.getElementById('player-note').textContent   = s.note || '';
+
+  if(s.src){
+    audio.src = s.src;
+    audio.load();
+  } else {
+    audio.src = '';
+    document.getElementById('time-tot').textContent = s.duration || '—';
+  }
+
+  // update list highlight
+  document.querySelectorAll('.song-item').forEach((el,i)=>{
+    el.classList.toggle('active', i===idx);
+    el.classList.remove('playing');
+  });
+}
+
+function togglePlay(){
+  if(currentIdx < 0){ loadSong(0); }
+  if(!SONGS[currentIdx].src){
+    // no file — just animate for demo
+    isPlaying = !isPlaying;
+    setPlayState(isPlaying);
+    return;
+  }
+  if(isPlaying){ audio.pause(); setPlayState(false); }
+  else { audio.play(); setPlayState(true); }
+}
+
+function setPlayState(playing){
+  isPlaying = playing;
+  document.getElementById('play-btn').textContent = playing ? '⏸' : '▶';
+  const vinyl = document.getElementById('vinyl');
+  if(playing){ vinyl.classList.add('spinning'); }
+  else { vinyl.classList.remove('spinning'); }
+  document.querySelectorAll('.song-item').forEach((el,i)=>{
+    if(i===currentIdx){
+      el.classList.toggle('playing', playing);
+    }
+  });
+}
+
+function nextSong(){
+  const next = (currentIdx+1) % SONGS.length;
+  loadSong(next);
+  if(isPlaying && SONGS[next].src){ audio.play(); }
+  else if(!SONGS[next].src && isPlaying){ /* keep animation */ }
+}
+
+function prevSong(){
+  if(audio.currentTime > 3){ audio.currentTime = 0; return; }
+  const prev = (currentIdx-1+SONGS.length) % SONGS.length;
+  loadSong(prev);
+  if(isPlaying && SONGS[prev].src){ audio.play(); }
+}
+
+function setVol(v){ audio.volume = v; }
+
+/* ── Build song list ── */
+const listEl = document.getElementById('song-list-items');
+SONGS.forEach((s,i)=>{
+  const el = document.createElement('div');
+  el.className = 'song-item';
+  el.innerHTML = `
+    <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+    <div class="song-item-num">${i+1}</div>
+    <div class="song-item-info">
+      <div class="song-item-title">${s.title}</div>
+      <div class="song-item-artist">${s.artist}</div>
+    </div>
+    <div class="song-item-dur">${s.duration||''}</div>
+  `;
+  el.addEventListener('click', ()=>{
+    if(currentIdx===i && isPlaying){ return; }
+    loadSong(i);
+    const wasPlaying = isPlaying;
+    if(s.src){ audio.play(); setPlayState(true); }
+    else { setPlayState(wasPlaying || currentIdx===i); }
+  });
+  listEl.appendChild(el);
+});
+
+// load first song on start
+loadSong(0);
+</script>
+</body>
+</html>
