@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Naomi — Wikipedia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Linux+Libertine+Display&family=Georgia&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:Georgia,'Times New Roman',serif;
+      background:#f8f9fa;
+      color:#202122;
+      font-size:14px;line-height:1.6;
+    }
+
+    /* ── TOP BAR ── */
+    .wiki-topbar{
+      background:#fff;border-bottom:1px solid #a7d7f9;
+      padding:6px 20px;display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;
+    }
+    .wiki-logo{
+      font-size:1.4rem;font-weight:bold;color:#000;
+      display:flex;align-items:center;gap:8px;
+    }
+    .wiki-logo span{font-size:0.7rem;color:#54595d;font-weight:normal;}
+    .wiki-search{
+      display:flex;gap:0;
+    }
+    .wiki-search input{
+      border:1px solid #a2a9b1;border-right:none;
+      padding:5px 10px;font-size:0.8rem;border-radius:2px 0 0 2px;
+      width:200px;outline:none;
+    }
+    .wiki-search button{
+      background:#f8f9fa;border:1px solid #a2a9b1;
+      padding:5px 10px;font-size:0.75rem;cursor:pointer;
+      border-radius:0 2px 2px 0;
+    }
+
+    /* ── TABS ── */
+    .wiki-tabs{
+      background:#f8f9fa;border-bottom:1px solid #a2a9b1;
+      padding:0 20px;display:flex;gap:0;
+    }
+    .wiki-tab{
+      padding:8px 14px;font-size:0.8rem;color:#0645ad;cursor:pointer;
+      border:1px solid transparent;border-bottom:none;margin-bottom:-1px;
+    }
+    .wiki-tab.active{
+      background:#fff;border-color:#a2a9b1;border-bottom-color:#fff;
+      color:#202122;font-weight:bold;
+    }
+
+    /* ── LAYOUT ── */
+    .wiki-layout{
+      display:grid;grid-template-columns:1fr 260px;gap:0;
+      max-width:1200px;margin:0 auto;
+      padding:20px 20px;
+    }
+    @media(max-width:768px){.wiki-layout{grid-template-columns:1fr;}}
+
+    /* ── ARTICLE ── */
+    .wiki-article{padding-right:24px;}
+
+    /* title */
+    .wiki-title{
+      font-family:'Linux Libertine Display',Georgia,serif;
+      font-size:2rem;font-weight:normal;color:#000;
+      border-bottom:1px solid #a2a9b1;padding-bottom:4px;margin-bottom:12px;
+    }
+
+    /* shortdesc */
+    .shortdesc{font-style:italic;color:#54595d;margin-bottom:14px;font-size:0.88rem;}
+
+    .wiki-notice{
+      background:#eaf3fb;border:1px solid #a2a9b1;
+      border-left:4px solid #3680b0;
+      padding:10px 14px;margin-bottom:16px;
+      font-size:0.83rem;display:flex;gap:10px;align-items:flex-start;
+    }
+    .wiki-notice-icon{font-size:1.2rem;flex-shrink:0;}
+
+    /* lead */
+    .wiki-lead{margin-bottom:16px;}
+    .wiki-lead p{margin-bottom:10px;}
+
+    /* TOC */
+    .toc{
+      background:#f8f9fa;border:1px solid #a2a9b1;
+      padding:14px 18px;display:inline-block;
+      margin-bottom:20px;min-width:200px;
+      font-size:0.83rem;
+    }
+    .toc-title{font-weight:bold;text-align:center;margin-bottom:8px;}
+    .toc ol{padding-left:20px;}
+    .toc li{margin:3px 0;}
+    .toc a{color:#0645ad;text-decoration:none;}
+    .toc a:hover{text-decoration:underline;}
+
+    /* sections */
+    .wiki-h2{
+      font-family:'Linux Libertine Display',Georgia,serif;
+      font-size:1.35rem;font-weight:normal;
+      border-bottom:1px solid #a2a9b1;padding-bottom:3px;
+      margin:20px 0 10px;
+    }
+    .wiki-h3{
+      font-size:1.05rem;font-weight:bold;
+      margin:14px 0 6px;
+    }
+    .wiki-p{margin-bottom:10px;}
+    .wiki-link{color:#0645ad;text-decoration:none;}
+    .wiki-link:hover{text-decoration:underline;}
+    .wiki-cite{font-size:0.75rem;color:#0645ad;vertical-align:super;}
+    .needed{color:#d33;font-size:0.75rem;vertical-align:super;cursor:help;}
+
+    /* footnotes */
+    .wiki-footnote{font-style:italic;color:#555;font-size:0.82rem;border-left:3px solid #a2a9b1;padding:6px 12px;margin:8px 0 12px;}
+
+    /* ── INFOBOX ── */
+    .infobox{
+      float:right;clear:right;
+      background:#f8f9fa;border:1px solid #a2a9b1;
+      font-size:0.83rem;margin:0 0 16px 20px;
+      width:260px;
+    }
+    @media(max-width:768px){.infobox{float:none;width:100%;margin:0 0 16px 0;}}
+
+    .infobox-title{
+      background:#cee0f2;text-align:center;
+      padding:6px;font-weight:bold;font-size:0.9rem;
+    }
+    .infobox-photo{
+      text-align:center;padding:12px;
+      font-size:5rem;
+      background:linear-gradient(135deg,#fff0f5,#ffe4ef);
+      border-bottom:1px solid #a2a9b1;
+    }
+    .infobox-photo-cap{font-size:0.75rem;color:#555;padding:4px 8px;background:#fff;border-bottom:1px solid #a2a9b1;text-align:center;}
+    .infobox table{width:100%;border-collapse:collapse;}
+    .infobox tr{border-bottom:1px solid #eaecf0;}
+    .infobox th{
+      background:#eaf3fb;padding:5px 8px;text-align:left;
+      font-weight:bold;width:40%;vertical-align:top;
+    }
+    .infobox td{padding:5px 8px;vertical-align:top;}
+
+    /* ── SIDEBAR ── */
+    .wiki-sidebar{
+      font-size:0.8rem;
+      border-left:1px solid #a2a9b1;
+      padding-left:16px;
+    }
+    @media(max-width:768px){.wiki-sidebar{border-left:none;border-top:1px solid #a2a9b1;padding:16px 0 0;}}
+
+    .sidebar-box{
+      background:#f8f9fa;border:1px solid #a2a9b1;
+      padding:12px;margin-bottom:14px;
+    }
+    .sidebar-title{font-weight:bold;margin-bottom:8px;font-size:0.85rem;}
+    .sidebar-item{padding:3px 0;color:#0645ad;cursor:pointer;}
+    .sidebar-item:hover{text-decoration:underline;}
+
+    /* ── REFERENCES ── */
+    .references{font-size:0.8rem;color:#555;}
+    .references li{margin:4px 0;padding-left:4px;}
+
+    /* ── CATEGORIES ── */
+    .categories{
+      background:#f8f9fa;border:1px solid #a2a9b1;
+      padding:8px 12px;font-size:0.8rem;margin-top:20px;
+    }
+    .categories-title{font-weight:bold;margin-bottom:6px;}
+    .cat-list{display:flex;flex-wrap:wrap;gap:6px;}
+    .cat{color:#0645ad;cursor:pointer;}
+    .cat:hover{text-decoration:underline;}
+
+    /* edit tag */
+    .edit-link{font-size:0.75rem;color:#0645ad;margin-left:8px;cursor:pointer;}
+
+    .back{
+      display:inline-block;margin:10px 20px;
+      font-size:0.8rem;color:#0645ad;text-decoration:none;
+    }
+    .back:hover{text-decoration:underline;}
+
+    /* highlighted fact */
+    .fact-highlight{
+      background:#fff9c4;border:1px solid #f0d060;
+      padding:2px 4px;border-radius:2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="wiki-topbar">
+  <div class="wiki-logo">
+    🌐 <div><div style="font-size:1.1rem;font-weight:bold">Wikipedia</div><span>The Free Encyclopedia</span></div>
+  </div>
+  <div class="wiki-search">
+    <input type="text" value="Naomi" readonly/>
+    <button>🔍</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="wiki-tabs">
+  <div class="wiki-tab active">Article</div>
+  <div class="wiki-tab">Talk</div>
+  <div class="wiki-tab">Read</div>
+  <div class="wiki-tab">Edit</div>
+  <div class="wiki-tab">History</div>
+</div>
+
+<a href="index.html" class="back">← Back to home</a>
+
+<!-- LAYOUT -->
+<div class="wiki-layout">
+<div class="wiki-article">
+
+  <!-- INFOBOX -->
+  <div class="infobox">
+    <div class="infobox-title">Naomi</div>
+    <div class="infobox-photo">👩🏽</div>
+    <div class="infobox-photo-cap">Naomi, pictured not eating an olive (as is tradition)</div>
+    <table>
+      <tr><th>Born</th><td>Somewhere wonderful<br/><span style="color:#555">Earth, Milky Way</span></td></tr>
+      <tr><th>Nationality</th><td>Phenomenal</td></tr>
+      <tr><th>Known for</th><td>Being perfect; hating olives; stealing Mo's heart; studying hard; being funny; existing</td></tr>
+      <tr><th>Partner</th><td><span class="wiki-link">Mo</span> (2024 – present, forever)</td></tr>
+      <tr><th>Title</th><td>Mo's Wife (pending official paperwork)</td></tr>
+      <tr><th>Eyes</th><td>Beautiful <a class="wiki-cite">[1]</a></td></tr>
+      <tr><th>Smile</th><td>Devastating <a class="wiki-cite">[2]</a></td></tr>
+      <tr><th>Stance on olives</th><td><span style="color:#d33;font-weight:bold">HOSTILE</span> <a class="wiki-cite">[3]</a></td></tr>
+      <tr><th>Studies</th><td>Dedicated and impressive <a class="wiki-cite">[4]</a></td></tr>
+    </table>
+  </div>
+
+  <h1 class="wiki-title">Naomi</h1>
+  <p class="shortdesc">For other uses, see Naomi (disambiguation). This article is about the most important Naomi.</p>
+
+  <div class="wiki-notice">
+    <div class="wiki-notice-icon">ℹ️</div>
+    <div>This article's <strong>neutrality is disputed</strong>. The primary editor (Mo) is believed to have a severe bias. All facts have been independently verified to be, if anything, <em>understated</em>.</div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Contents <span style="font-weight:normal;font-size:0.8rem">[<a href="#" class="wiki-link">hide</a>]</span></div>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#personality">Personality and Character</a>
+        <ol style="padding-left:16px">
+          <li><a href="#humor">Humor</a></li>
+          <li><a href="#kindness">Kindness</a></li>
+          <li><a href="#maturity">Maturity</a></li>
+        </ol>
+      </li>
+      <li><a href="#appearance">Physical Appearance</a></li>
+      <li><a href="#olive">The Olive Situation</a></li>
+      <li><a href="#relationship">Relationship with Mo</a></li>
+      <li><a href="#academics">Academic Career</a></li>
+      <li><a href="#legacy">Legacy and Impact</a></li>
+      <li><a href="#references">References</a></li>
+    </ol>
+  </div>
+
+  <!-- LEAD -->
+  <div class="wiki-lead">
+    <p class="wiki-p"><b>Naomi</b> is a widely celebrated individual, best known for being <span class="fact-highlight">objectively wonderful</span> and for her groundbreaking stance against olives <a class="wiki-cite">[1]</a>. She first came to international attention on the <a href="#" class="wiki-link">Lovesick</a> server in 2024, where she was discovered by <a href="#" class="wiki-link">Mo</a>, a man who immediately recognised that he had found something extremely rare <a class="wiki-cite">[2]</a>.</p>
+    <p class="wiki-p">Naomi is considered a defining figure of the modern era, admired for her humor, her eyes, her nose (which has been described in multiple peer-reviewed sources as "gorgeous" <a class="wiki-cite">[3]</a>), and her ability to make anyone around her feel instantly at ease. She is the recipient of the <em>Mo Award for Excellence in Being Naomi</em>, which she has won every year since its founding <a class="needed" title="citation needed">[citation needed]</a>.</p>
+  </div>
+
+  <!-- OVERVIEW -->
+  <h2 class="wiki-h2" id="overview">1. Overview <span class="edit-link">[edit]</span></h2>
+  <p class="wiki-p">Naomi came to prominence not through any single dramatic event, but through the consistent, daily act of simply being herself — a feat that historians have called "deceptively easy-looking, but actually incredibly rare" <a class="wiki-cite">[4]</a>. Her influence extends across multiple domains including: making Mo laugh until he can't breathe, making Mo feel safe, and showing up for the people she loves in ways that are, frankly, illegal in several countries due to how good they make people feel.</p>
+  <p class="wiki-p">She is survived by no tragedies worth mentioning, as Mo has made it his personal mission to ensure she is okay <a class="wiki-cite">[5]</a>.</p>
+
+  <!-- PERSONALITY -->
+  <h2 class="wiki-h2" id="personality">2. Personality and Character <span class="edit-link">[edit]</span></h2>
+  <p class="wiki-p">Scholars have devoted significant effort to cataloguing Naomi's personality, with most concluding that a full catalogue would require "considerably more paper" <a class="wiki-cite">[6]</a>.</p>
+
+  <h3 class="wiki-h3" id="humor">2.1 Humor</h3>
+  <p class="wiki-p">Naomi's humor has been described as "genuinely, unpredictably funny" rather than the performative humor common in lesser individuals <a class="wiki-cite">[7]</a>. She has been known to say things that cause Mo to lose all composure in public settings, which Mo considers one of his favourite ongoing experiences <a class="wiki-cite">[8]</a>. Her comedic style blends wit, timing, and an encyclopedic knowledge of what will make the specific person in front of her laugh.</p>
+
+  <h3 class="wiki-h3" id="kindness">2.2 Kindness</h3>
+  <p class="wiki-p">Multiple sources confirm that Naomi is "too kind for this world, which is the world's problem, not hers" <a class="wiki-cite">[9]</a>. She is notable for caring deeply about the people around her and expressing it in ways both large and small. Mo has described this quality as "something I think about every day" <a class="wiki-cite">[10]</a>.</p>
+  <div class="wiki-footnote">"She texted me that she was thinking about me. On a Tuesday. For no reason. I have not recovered." — Mo, primary source interview, 2024</div>
+
+  <h3 class="wiki-h3" id="maturity">2.3 Maturity</h3>
+  <p class="wiki-p">Naomi demonstrates a level of emotional maturity that researchers have described as "startling and frankly humbling" <a class="wiki-cite">[11]</a>. She communicates openly, handles difficult conversations with grace, and has never once started an argument about something petty. This remains unverified by any historical precedent.</p>
+
+  <!-- APPEARANCE -->
+  <h2 class="wiki-h2" id="appearance">3. Physical Appearance <span class="edit-link">[edit]</span></h2>
+  <p class="wiki-p">Naomi's physical appearance has been the subject of extensive documentation. Her eyes are described in the literature as "genuinely beautiful" and have been cited in over 32 personal testimonials by the same source <a class="wiki-cite">[3]</a>. Her smile is considered a Category 5 Devastating Event by the International Standards of Looking Good <a class="needed">[citation needed]</a>.</p>
+  <p class="wiki-p">Of particular note is her nose, which Mo has publicly called "gorgeous" and which has been independently verified to be, in fact, gorgeous <a class="wiki-cite">[12]</a>. Her cheeks, lips, eyebrows, and hair have each been individually cited in separate scholarship as "perfect." The possibility that all of Naomi's features are perfect simultaneously has been deemed "statistically improbable but empirically confirmed" <a class="wiki-cite">[13]</a>.</p>
+
+  <!-- OLIVE SITUATION -->
+  <h2 class="wiki-h2" id="olive">4. The Olive Situation <span class="edit-link">[edit]</span></h2>
+  <p class="wiki-p">Naomi's relationship with olives is perhaps her most documented characteristic outside of being wonderful. She is <span class="fact-highlight">strongly, vocally, and non-negotiably opposed to olives</span> in all their forms <a class="wiki-cite">[14]</a>. This includes black olives, green olives, Kalamata olives, stuffed olives, olive oil (disputed) <a class="needed">[citation needed]</a>, and "any food that has been in the same zip code as an olive" (unconfirmed but plausible).</p>
+  <p class="wiki-p">The Olive Situation has become so notable that it has inspired a dedicated legal proceeding, <em>The People vs. The Olive</em>, in which Naomi is expected to serve as judge <a class="wiki-cite">[15]</a>. Legal experts predict a swift and overwhelming guilty verdict <a class="wiki-cite">[16]</a>.</p>
+  <div class="wiki-footnote">"I ordered the pasta and THERE WERE OLIVES. I literally cannot." — Naomi, primary source</div>
+
+  <!-- RELATIONSHIP WITH MO -->
+  <h2 class="wiki-h2" id="relationship">5. Relationship with Mo <span class="edit-link">[edit]</span></h2>
+  <p class="wiki-p">Naomi met Mo on the Lovesick server, a fact that historians consider "extremely on-brand given what happened next" <a class="wiki-cite">[17]</a>. They began dating on <span class="fact-highlight">24th July 2024</span>, a date that Mo considers the best day of his life and has commemorated in approximately 47 different ways <a class="wiki-cite">[18]</a>.</p>
+  <p class="wiki-p">Their relationship is characterised by an unusual level of compatibility, shared music taste, mutual support, and the fact that Mo has never once stopped being grateful that she chose him <a class="wiki-cite">[19]</a>. Naomi famously said "I love you" first, a fact that Mo claims he said first, which is incorrect, and which Naomi has officially won <a class="wiki-cite">[20]</a>.</p>
+  <div class="wiki-footnote">"She never lost faith in me. Not once. I don't have words for that." — Mo, personal communication, 2024</div>
+
+  <!-- ACADEMICS -->
+  <h2 class="wiki-h2" id="academics">6. Academic Career <span class="edit-link">[edit]</span></h2>
+  <p class="wiki-p">Naomi is noted for her dedication to her studies, a quality admired by Mo, who describes it as "one of many things she does that honestly makes me feel like I should be better" <a class="wiki-cite">[21]</a>. She approaches academia with the same focus and commitment she brings to all areas of life, and is expected to achieve "whatever she decides to achieve, because she's Naomi and that's what she does" <a class="wiki-cite">[22]</a>.</p>
+
+  <!-- LEGACY -->
+  <h2 class="wiki-h2" id="legacy">7. Legacy and Impact <span class="edit-link">[edit]</span></h2>
+  <p class="wiki-p">Naomi's legacy is still being written, largely because she is very much alive and still doing incredible things <a class="wiki-cite">[23]</a>. Her impact on Mo specifically has been assessed as "total and permanent" <a class="wiki-cite">[24]</a>. Future historians are expected to describe her as "someone who loved and was loved, completely."</p>
+  <p class="wiki-p">She has never been a burden. She has never been a chore. She has always been exactly enough <a class="wiki-cite">[25]</a>.</p>
+  <div class="wiki-footnote">"I want to marry her." — Mo, multiple sources, consistently</div>
+
+  <!-- REFERENCES -->
+  <h2 class="wiki-h2" id="references">8. References <span class="edit-link">[edit]</span></h2>
+  <ol class="references">
+    <li>Mo (2024). "Her eyes specifically". <em>Personal observation, ongoing</em>.</li>
+    <li>Mo (2024). "The moment I saw her and thought: oh, there she is". <em>Unpublished feelings</em>.</li>
+    <li>Mo (2024). "Her nose is gorgeous and I will die on this hill". <em>Journal of Correct Opinions, Vol. 1</em>.</li>
+    <li>International Institute of Being Wonderful. (2024). <em>Annual Report</em>. p. 1 (entire report is about Naomi).</li>
+    <li>Mo (2024). "I've got you". <em>Said directly to Naomi, multiple occasions</em>.</li>
+    <li>The Wikipedia Editor Who Is Definitely Neutral (2024). "She's just a lot." <em>Filed under: understatements</em>.</li>
+    <li>Everyone Who Has Met Her (2024). "She made me laugh so hard." <em>Universal consensus</em>.</li>
+    <li>Mo (2024). "I can't explain the noise I made." <em>Incident report</em>.</li>
+    <li>[9]–[25] Mo. <em>Various personal communications, love notes, and a very long text sent at 2am about how grateful he is</em>. 2024–present.</li>
+  </ol>
+
+  <!-- CATEGORIES -->
+  <div class="categories">
+    <div class="categories-title">Categories:</div>
+    <div class="cat-list">
+      <span class="cat">People who are genuinely wonderful</span> ·
+      <span class="cat">Anti-olive activists</span> ·
+      <span class="cat">People Met on Lovesick</span> ·
+      <span class="cat">Mo's Favourite Person</span> ·
+      <span class="cat">People with beautiful eyes</span> ·
+      <span class="cat">Future wives (one entry)</span> ·
+      <span class="cat">People who said I love you first (disputed)</span> ·
+      <span class="cat">Living people</span> ·
+      <span class="cat">People who never lost faith in Mo</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- SIDEBAR -->
+<div class="wiki-sidebar">
+  <div class="sidebar-box">
+    <div class="sidebar-title">Tools</div>
+    <div class="sidebar-item">What links here</div>
+    <div class="sidebar-item">Related changes</div>
+    <div class="sidebar-item">Upload file</div>
+    <div class="sidebar-item">Special pages</div>
+    <div class="sidebar-item">Cite this page</div>
+  </div>
+  <div class="sidebar-box">
+    <div class="sidebar-title">In other languages</div>
+    <div class="sidebar-item">English (you are here)</div>
+    <div class="sidebar-item">Mo's Heart (primary source)</div>
+    <div class="sidebar-item">The Language of Love</div>
+  </div>
+  <div class="sidebar-box">
+    <div class="sidebar-title">Did you know?</div>
+    <p style="font-size:0.78rem;line-height:1.6;color:#555;margin-bottom:8px;">Naomi is the only person in documented history to have made Mo feel both completely safe and completely nervous at the same time.</p>
+    <p style="font-size:0.78rem;line-height:1.6;color:#555;">The phrase "she's never a burden" has been cited 28 times in Mo's personal writings, all independently and all meaning it.</p>
+  </div>
+  <div class="sidebar-box" style="background:#fff9f0;border-color:#e8b060;">
+    <div class="sidebar-title" style="color:#b06000;">⚠️ Editor Notice</div>
+    <p style="font-size:0.78rem;line-height:1.6;color:#855000;">This article was written by someone who is deeply, hopelessly, and permanently in love with the subject. All facts have been triple-checked. None have been exaggerated. If anything, they are understated.</p>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
