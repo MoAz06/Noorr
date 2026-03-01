@@ -3,9 +3,9 @@ document.getElementById('quiz-form').addEventListener('submit', function(e) {
 
     let score = 0;
     const answers = {
-        question1: "The Notebook", 
-        question2: "Restaurant X", 
-        question3: "Blauw"        
+        question1: "Lovesick", 
+        question2: "Tbh idk", 
+        question3: "pastel blue"        
     };
 
     for (const [key, correctAnswer] of Object.entries(answers)) {
