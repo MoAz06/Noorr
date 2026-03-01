@@ -3,24 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Romantic Surprises</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Love Quiz: How well do you know me?</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="quiz.css">
 </head>
 <body>
     <header>
-        <h1>Welcome to your romantic website!</h1>
-        <p>Here you can play games that remind us of our time together and celebrate our love.</p>
+        <h1>Love Quiz: How well do you know me?</h1>
+        <p>Answer the questions about our relationship and see how well you know me! 💖</p>
     </header>
 
-    <div class="game-list">
-        <h2>Available games:</h2>
-        <ul>
-            <li><a href="games/liefdesquiz/index.html">Love Quiz: How well do you know me?</a></li>
-        </ul>
+    <div id="quiz-container">
+        <form id="quiz-form">
+            <div class="question">
+                <label for="question1">What is our favorite movie?</label>
+                <input type="text" id="question1" required>
+            </div>
+
+            <div class="question">
+                <label for="question2">Where did we go on our first date?</label>
+                <input type="text" id="question2" required>
+            </div>
+
+            <div class="question">
+                <label for="question3">What is my favorite color?</label>
+                <input type="text" id="question3" required>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+        <div id="result" class="hidden">
+            <h3>Your score: <span id="score"></span></h3>
+            <p id="score-message"></p>
+            <button onclick="window.location.reload()">Play again</button>
+        </div>
     </div>
 
     <footer>
-        <p>Enjoy, my love! ❤️</p>
+        <p>Enjoy! 💘</p>
     </footer>
+
+    <script src="quiz.js"></script>
 </body>
 </html>
