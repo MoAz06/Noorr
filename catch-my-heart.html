@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catch My Heart 💕</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --rose:#d94f7a;--rose-lt:#f7b8cc;--blush:#fff0f5;--deep:#7b1d42;
+      --gold:#f5c842;--card:rgba(255,255,255,0.82);
+    }
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:var(--blush);
+      overflow:hidden;
+      height:100vh; width:100vw;
+      color:var(--deep);
+    }
+    .bg{
+      position:fixed;inset:0;z-index:0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, #ffd6e7 0%,transparent 55%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, #ffc2d9 0%,transparent 50%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, #fff0f5 0%,#ffe4ef 100%);
+    }
+    .bg::after{
+      content:'';position:absolute;inset:0;
+      background-image:radial-gradient(circle,rgba(217,79,122,0.05) 1px,transparent 1px);
+      background-size:24px 24px;
+    }
+
+    /* custom cursor — basket */
+    #cursor{
+      position:fixed;pointer-events:none;z-index:1000;
+      transform:translate(-50%,-50%);
+      font-size:2.4rem;
+      filter:drop-shadow(0 4px 8px rgba(200,60,100,0.3));
+      display:none;
+    }
+
+    canvas{position:fixed;inset:0;z-index:2;pointer-events:none;cursor:none;}
+
+    /* HUD */
+    .hud{
+      position:fixed;top:0;left:0;right:0;z-index:10;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px 28px;
+      background:linear-gradient(to bottom,rgba(255,240,245,0.95),transparent);
+    }
+    .hud-score{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.5rem;font-weight:600;color:var(--rose);
+    }
+    .hud-score span{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;display:block;color:var(--rose-lt);}
+    .hud-lives{font-size:1.4rem;letter-spacing:4px;}
+    .hud-timer{
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.5rem;font-weight:600;color:var(--deep);text-align:right;
+    }
+    .hud-timer span{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;display:block;color:var(--rose-lt);}
+
+    /* combo pop */
+    #combo{
+      position:fixed;top:80px;left:50%;transform:translateX(-50%);
+      font-family:'Cormorant Garamond',serif;
+      font-size:2rem;font-style:italic;color:var(--rose);
+      z-index:20;pointer-events:none;
+      opacity:0;transition:opacity 0.2s;
+    }
+
+    /* ── Overlays ── */
+    .overlay{
+      position:fixed;inset:0;z-index:100;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:rgba(255,240,245,0.94);
+      backdrop-filter:blur(12px);
+      text-align:center;padding:32px;
+    }
+    .overlay.hidden{display:none;}
+
+    .ov-emoji{font-size:4rem;margin-bottom:16px;}
+    .ov-title{
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(2rem,6vw,3.2rem);font-weight:600;color:var(--deep);
+      margin-bottom:10px;
+    }
+    .ov-title em{font-style:italic;color:var(--rose);}
+    .ov-sub{font-size:0.9rem;font-weight:300;color:#a0506a;max-width:340px;line-height:1.7;margin-bottom:32px;}
+
+    .btn-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+    .btn{
+      padding:13px 28px;border-radius:999px;border:none;cursor:pointer;
+      font-family:'DM Sans',sans-serif;font-size:0.85rem;letter-spacing:0.08em;
+      text-transform:uppercase;text-decoration:none;display:inline-block;
+      transition:transform 0.15s,box-shadow 0.15s;
+    }
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,60,100,0.22);}
+    .btn-primary{background:linear-gradient(135deg,var(--rose-lt),var(--rose));color:white;}
+    .btn-secondary{background:white;border:2px solid var(--rose);color:var(--rose);}
+
+    /* reason popup */
+    #reason-pop{
+      position:fixed;bottom:60px;left:50%;transform:translateX(-50%);
+      background:var(--card);
+      border:1.5px solid rgba(255,182,208,0.7);
+      border-radius:20px;padding:18px 28px;
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.1rem;font-style:italic;color:var(--deep);
+      text-align:center;max-width:340px;
+      box-shadow:0 8px 30px rgba(200,60,100,0.12);
+      z-index:20;pointer-events:none;
+      opacity:0;transition:opacity 0.3s;
+    }
+
+    .back{
+      position:fixed;top:20px;left:20px;z-index:200;
+      font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;
+      color:var(--rose);text-decoration:none;opacity:0.7;transition:opacity 0.2s;
+    }
+    .back:hover{opacity:1;}
+  </style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="cursor">🧺</div>
+<canvas id="gc"></canvas>
+<a href="index.html" class="back" id="back-link">← home</a>
+
+<!-- HUD -->
+<div class="hud">
+  <div class="hud-score"><span>score</span><span id="score-val">0</span></div>
+  <div class="hud-lives" id="lives-val">♥ ♥ ♥</div>
+  <div class="hud-timer"><span>time</span><span id="timer-val">45</span></div>
+</div>
+<div id="combo"></div>
+<div id="reason-pop"></div>
+
+<!-- Start overlay -->
+<div class="overlay" id="ov-start">
+  <div class="ov-emoji">💕</div>
+  <h1 class="ov-title">Catch My <em>Heart</em></h1>
+  <p class="ov-sub">Hearts fall from the sky — catch them in your basket!<br/>Each heart you catch reveals a reason why I love you.<br/>Don't let them hit the ground… 💔</p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">Let's play ♥</button>
+    <a href="index.html" class="btn btn-secondary">← Back</a>
+  </div>
+</div>
+
+<!-- End overlay -->
+<div class="overlay hidden" id="ov-end">
+  <div class="ov-emoji" id="end-emoji">🏆</div>
+  <h1 class="ov-title" id="end-title">Amazing!</h1>
+  <p class="ov-sub" id="end-sub"></p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">Play again ♡</button>
+    <a href="index.html" class="btn btn-secondary">← Home</a>
+  </div>
+</div>
+
+<script>
+const REASONS = [
+  "the way you love me","the way you treat me","how funny you are",
+  "how mature you are","how I can be myself with you","how safe I feel with you",
+  "how at ease I am with you","how comfortable you make me","how fun you are to be around",
+  "your amazing humor","how kind you are","how caring you are",
+  "how beautiful your eyes are","your gorgeous smile","your beautiful nose",
+  "how beautiful your hair is","your perfect cheeks","how full your lips are",
+  "how all your features match perfectly","how kissable your face is",
+  "your eyebrows 😍","how dedicated you are","how open you are with me",
+  "how you always tell me things","how you're never a burden",
+  "how you know I want to marry you","our similar music taste",
+  "how well we get along","how you're always there for me",
+  "how you never lost faith in me","how similar we are","you, all of you ♥"
+];
+
+const canvas = document.getElementById('gc');
+const ctx    = canvas.getContext('2d');
+let W, H;
+
+function resize(){
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize(); addEventListener('resize', resize);
+
+// cursor
+const cursorEl = document.getElementById('cursor');
+let mx = W/2, my = H-80;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+document.addEventListener('touchmove', e => {
+  e.preventDefault();
+  mx=e.touches[0].clientX; my=e.touches[0].clientY;
+},{passive:false});
+
+// game state
+let hearts=[], particles=[], score=0, lives=3, timeLeft=45, combo=0;
+let raf, timerInterval, running=false;
+let usedReasons=[];
+
+const HEART_CHARS = ['♥','💕','💖','💗','💓','💞'];
+const MISS_CHARS  = ['💔','😢','🥺'];
+
+// basket width
+const BW = 72;
+
+function startGame(){
+  document.getElementById('ov-start').classList.add('hidden');
+  document.getElementById('ov-end').classList.add('hidden');
+  document.getElementById('back-link').style.display='none';
+  document.getElementById('cursor').style.display='block';
+  document.body.style.cursor='none';
+  hearts=[]; particles=[]; score=0; lives=3; timeLeft=45; combo=0; usedReasons=[];
+  updateHUD();
+  running=true;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timer-val').textContent=timeLeft;
+    if(timeLeft<=0){ endGame(); }
+  },1000);
+  cancelAnimationFrame(raf);
+  loop();
+  spawnSchedule();
+}
+
+let spawnTimeout;
+function spawnSchedule(){
+  if(!running) return;
+  spawnHeart();
+  const delay = Math.max(400, 1200 - (45-timeLeft)*14);
+  spawnTimeout = setTimeout(spawnSchedule, delay);
+}
+
+function spawnHeart(){
+  const isBig  = Math.random()<0.15;
+  const isBomb = Math.random()<0.08; // skull = lose life if caught
+  hearts.push({
+    x: 60+Math.random()*(W-120),
+    y: -30,
+    vy: 1.5+Math.random()*2.5+(45-timeLeft)*0.04,
+    size: isBig ? 38 : (18+Math.random()*14),
+    char: isBomb ? '💀' : HEART_CHARS[Math.floor(Math.random()*HEART_CHARS.length)],
+    isBomb, isBig,
+    wobble: Math.random()*Math.PI*2,
+    wobbleSpeed: 0.04+Math.random()*0.03,
+    caught:false, missed:false,
+    opacity:1
+  });
+}
+
+function updateHUD(){
+  document.getElementById('score-val').textContent=score;
+  document.getElementById('lives-val').textContent='♥'.repeat(lives)+'♡'.repeat(Math.max(0,3-lives));
+  document.getElementById('timer-val').textContent=timeLeft;
+}
+
+let comboTimer;
+function showCombo(text){
+  const el=document.getElementById('combo');
+  el.textContent=text; el.style.opacity='1';
+  clearTimeout(comboTimer);
+  comboTimer=setTimeout(()=>el.style.opacity='0',900);
+}
+
+let reasonTimer;
+function showReason(text){
+  const el=document.getElementById('reason-pop');
+  el.textContent='💕 I love '+text;
+  el.style.opacity='1';
+  clearTimeout(reasonTimer);
+  reasonTimer=setTimeout(()=>el.style.opacity='0',2200);
+}
+
+function spawnParticles(x,y,type){
+  const chars = type==='catch' ? ['♥','✨','🌸','💖'] : MISS_CHARS;
+  for(let i=0;i<12;i++){
+    const a=Math.random()*Math.PI*2, sp=2+Math.random()*5;
+    particles.push({
+      x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,
+      life:1,decay:0.025+Math.random()*0.02,
+      sz:16+Math.random()*10,
+      ch:chars[Math.floor(Math.random()*chars.length)],
+      g:0.1
+    });
+  }
+}
+
+function loop(){
+  ctx.clearRect(0,0,W,H);
+
+  // cursor visual (basket)
+  cursorEl.style.left=mx+'px';
+  cursorEl.style.top=my+'px';
+
+  // basket hitbox
+  const bx=mx-BW/2, by=my-24;
+
+  // update hearts
+  hearts.forEach(h=>{
+    if(h.caught||h.missed) return;
+    h.wobble+=h.wobbleSpeed;
+    h.y+=h.vy;
+    const hx2=h.x+Math.sin(h.wobble)*8;
+
+    // catch check
+    if(h.y+h.size/2>by && h.y-h.size/2<by+48 && hx2>bx && hx2<bx+BW){
+      h.caught=true;
+      spawnParticles(hx2,h.y,'catch');
+      if(h.isBomb){
+        lives=Math.max(0,lives-1);
+        updateHUD();
+        showCombo('💀 ouch!');
+        combo=0;
+        if(lives<=0){ endGame(); return; }
+      } else {
+        const pts=h.isBig?3:1;
+        score+=pts*(combo>2?2:1);
+        combo++;
+        if(combo>=5) showCombo('💖 x'+combo+' COMBO!');
+        else if(combo>=3) showCombo('✨ x'+combo+'!');
+        updateHUD();
+        // reason
+        if(usedReasons.length>=REASONS.length) usedReasons=[];
+        const pool=REASONS.filter(r=>!usedReasons.includes(r));
+        const r=pool[Math.floor(Math.random()*pool.length)];
+        usedReasons.push(r);
+        showReason(r);
+      }
+    }
+
+    // miss
+    if(h.y>H+40){
+      h.missed=true;
+      if(!h.isBomb){
+        spawnParticles(h.x,H-20,'miss');
+        combo=0;
+        lives=Math.max(0,lives-1);
+        updateHUD();
+        if(lives<=0){ endGame(); return; }
+      }
+    }
+
+    // draw
+    ctx.save();
+    ctx.globalAlpha=h.opacity;
+    ctx.font=h.size+'px serif';
+    ctx.textAlign='center';
+    ctx.fillText(h.char,hx2,h.y);
+    ctx.restore();
+  });
+
+  hearts=hearts.filter(h=>!h.caught&&!h.missed);
+
+  // particles
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life-=p.decay;
+    ctx.save();ctx.globalAlpha=Math.max(0,p.life);
+    ctx.font=p.sz+'px serif';ctx.textAlign='center';
+    ctx.fillText(p.ch,p.x,p.y);ctx.restore();
+  });
+
+  if(running) raf=requestAnimationFrame(loop);
+}
+
+function endGame(){
+  running=false;
+  clearInterval(timerInterval);
+  clearTimeout(spawnTimeout);
+  cancelAnimationFrame(raf);
+  hearts=[]; particles=[];
+  document.getElementById('cursor').style.display='none';
+  document.body.style.cursor='';
+
+  const ov=document.getElementById('ov-end');
+  ov.classList.remove('hidden');
+  document.getElementById('back-link').style.display='';
+
+  let emoji,title,sub;
+  if(score>=60){emoji='💯';title='Perfect! <em>Incredible!</em>';sub=`You caught ${score} hearts! You're as perfect as your score. ♥`;}
+  else if(score>=35){emoji='💖';title='So <em>good!</em>';sub=`${score} hearts caught! I knew you'd be amazing at this. 🌸`;}
+  else if(score>=15){emoji='🥰';title='Not <em>bad!</em>';sub=`${score} hearts — pretty sweet! Try again for more? ♡`;}
+  else{emoji='🥺';title='Aww, <em>next time!</em>';sub=`Only ${score} hearts... but I still love you 💔`;}
+
+  document.getElementById('end-emoji').textContent=emoji;
+  document.getElementById('end-title').innerHTML=title;
+  document.getElementById('end-sub').textContent=sub;
+}
+
+// touch support
+document.addEventListener('touchstart',e=>{
+  mx=e.touches[0].clientX;my=e.touches[0].clientY;
+},{passive:true});
+</script>
+</body>
+</html>
