@@ -1,0 +1,55 @@
+/* General body styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-image: url('background.jpg'); /* Add your image path here */
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+    text-align: center;
+    padding: 50px;
+    margin: 0;
+}
+
+/* Styling for the header */
+header {
+    background-color: rgba(0, 0, 0, 0.5); /* Dark overlay for better text visibility */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 700px;
+    margin: 20px auto;
+}
+
+h1 {
+    color: #ff0066;
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 18px;
+}
+
+/* Styling for the start quiz button */
+.start-quiz-button {
+    padding: 15px 30px;
+    font-size: 20px;
+    background-color: #ff0066;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+.start-quiz-button:hover {
+    background-color: #ff3399;
+}
+
+/* Footer styling */
+footer {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #fff;
+}
